@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/services/prisma.service'
 import { usuarios as UserModel } from '@prisma/client'
-import { CreateUserDto } from './dto/user.dto'
+import { CreateUserDto } from './dto/create-user.dto'
+import { encryptPassword } from 'src/utils/auth'
+import { generarId } from 'src/utils/generateAuthToken'
 
 @Injectable()
 export class UsersService {
@@ -15,17 +17,22 @@ export class UsersService {
     return this.prisma.usuarios.findUnique({ where: { id: parseInt(id) } })
   }
 
+  async getUserByEmail(email: string): Promise<UserModel> {
+    return this.prisma.usuarios.findFirst({ where: { email } })
+  }
+
   async createUser(data: CreateUserDto): Promise<UserModel> {
     return this.prisma.usuarios.create({ 
       data: {
         nombre: data.nombre,
         apellido: data.apellido,
         email: data.email,
-        password: data.password,
+        password: await encryptPassword(data.password),
+        token_confirmacion: generarId(),
         direccion: data.direccion,
         codigo_postal: data.codigoPostal,
         telefono: data.telefono,
-        fecha_nacimiento: data.fechaNacimiento
+        fecha_nacimiento: data.fechaNacimiento,
       }
     })
   }

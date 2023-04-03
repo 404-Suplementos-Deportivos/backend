@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common'
 import { Response } from 'express'
 import { UsersService } from './users.service'
-import { CreateUserDto } from './dto/user.dto'
+import { CreateUserDto, createUserSchema } from './dto/create-user.dto'
 
 @Controller('users')
 export class UsersController {
@@ -44,8 +44,16 @@ export class UsersController {
   @Post()
   async createUser(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
     try {
-      const user = await this.usersService.createUser(createUserDto);
-      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'User not found' })
+      const validatedCreateUserDto = createUserSchema.parse(createUserDto)
+
+      // Validar existencia anterior de email
+      const userExists = await this.usersService.getUserByEmail(validatedCreateUserDto.email)
+      if(userExists) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Usuario ya existente' })
+
+      const user = await this.usersService.createUser(createUserDto)
+
+      // Enviar mail de confirmación con token
+      
 
       return res.status(HttpStatus.OK).json(user)
     } catch (error) {
