@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model banners {
+  id          Int    @id @default(autoincrement())
+  nombre      String @db.VarChar(60)
+  descripcion String @db.VarChar(120)
+  url_imagen  String @db.VarChar
+}
+
+model categorias {
+  id          Int         @id @default(autoincrement())
+  nombre      String      @db.VarChar(60)
+  descripcion String?     @db.VarChar(120)
+  estado      Boolean     @default(true)
+  productos   productos[]
+}
+
+model cupones_descuento {
+  id                Int      @id @default(autoincrement())
+  codigo            String   @db.VarChar(15)
+  fecha_vencimiento DateTime @db.Date
+  descuento         Decimal  @db.Decimal
+  estado            Boolean  @default(true)
+}
+
+model detalles_facturas {
+  id          Int       @id @default(autoincrement())
+  cantidad    Int
+  precio      Decimal   @db.Money
+  descuento   Int
+  id_producto Int       @default(autoincrement())
+  id_factura  Int       @default(autoincrement())
+  facturas    facturas  @relation(fields: [id_factura], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesfacturas_facturas")
+  productos   productos @relation(fields: [id_producto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesfacturas_productos")
+}
+
+model detalles_np {
+  id                     Int                   @id @default(autoincrement())
+  cantidad_pedida        Int
+  cantidad_recibida      Int
+  precio                 Decimal               @db.Money
+  descuento              Int
+  estado                 Boolean
+  id_productos_proveedor Int                   @default(autoincrement())
+  id_nota_pedido         Int                   @default(autoincrement())
+  notas_pedido           notas_pedido          @relation(fields: [id_nota_pedido], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesnp_notaspedido")
+  productos_proveedores  productos_proveedores @relation(fields: [id_productos_proveedor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesnp_productosproveedores")
+}
+
+model detalles_pedidos {
+  id          Int       @id @default(autoincrement())
+  cantidad    Int
+  precio      Decimal   @db.Money
+  id_producto Int       @default(autoincrement())
+  id_pedido   Int       @default(autoincrement())
+  pedidos     pedidos   @relation(fields: [id_pedido], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallespedidos_pedidos")
+  productos   productos @relation(fields: [id_producto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallespedidos_productos")
+}
+
+model estados_factura {
+  id       Int        @id @default(autoincrement())
+  nombre   String     @db.VarChar(30)
+  estado   Boolean    @default(true)
+  facturas facturas[]
+}
+
+model estados_np {
+  id           Int            @id @default(autoincrement())
+  nombre       String         @db.VarChar(30)
+  estado       Boolean        @default(true)
+  notas_pedido notas_pedido[]
+}
+
+model estados_pedido {
+  id      Int       @id @default(autoincrement())
+  nombre  String    @db.VarChar(30)
+  estado  Boolean   @default(true)
+  pedidos pedidos[]
+}
+
+model facturas {
+  id                Int                 @id @default(autoincrement())
+  fecha             DateTime            @db.Date
+  fecha_vencimiento DateTime            @db.Date
+  numero_factura    Int                 @default(autoincrement())
+  id_usuario        Int                 @default(autoincrement())
+  id_estado         Int                 @default(autoincrement())
+  detalles_facturas detalles_facturas[]
+  estados_factura   estados_factura     @relation(fields: [id_estado], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_facturas_estadosfactura")
+  usuarios          usuarios            @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_facturas_usuarios")
+}
+
+model ganancias {
+  id         Int      @id @default(autoincrement())
+  vigencia   DateTime @db.Date
+  porcentaje Decimal  @db.Decimal
+  id_usuario Int      @default(autoincrement())
+  usuarios   usuarios @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_ganancias_usuarios")
+}
+
+model notas_pedido {
+  id                Int           @id @default(autoincrement())
+  fecha             DateTime      @db.Date
+  version           Int
+  fecha_vencimiento DateTime      @db.Date
+  id_usuario        Int           @default(autoincrement())
+  id_proveedor      Int           @default(autoincrement())
+  id_estado_np      Int           @default(autoincrement())
+  id_tipo_compra    Int           @default(autoincrement())
+  detalles_np       detalles_np[]
+  estados_np        estados_np    @relation(fields: [id_estado_np], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_notaspedido_estadosnp")
+  proveedores       proveedores   @relation(fields: [id_proveedor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_notaspedido_proveedor")
+  tipos_compra      tipos_compra  @relation(fields: [id_tipo_compra], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_notaspedido_tiposcompra")
+  usuarios          usuarios      @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_notaspedido_usuarios")
+}
+
+model pedidos {
+  id               Int                @id @default(autoincrement())
+  fecha            DateTime           @db.Date
+  descuento        Int
+  id_usuario       Int                @default(autoincrement())
+  id_estado_pedido Int                @default(autoincrement())
+  detalles_pedidos detalles_pedidos[]
+  estados_pedido   estados_pedido     @relation(fields: [id_estado_pedido], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedidos_estadospedido")
+  usuarios         usuarios           @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedidos_usuarios")
+}
+
+model productos {
+  id                    Int                     @id @default(autoincrement())
+  nombre                String                  @db.VarChar(80)
+  descripcion           String                  @db.VarChar(200)
+  url_imagen            String                  @db.VarChar
+  precio_lista          Decimal                 @db.Money
+  stock                 Int                     @default(0)
+  stock_minimo          Int
+  estado                Boolean                 @default(true)
+  id_categoria          Int                     @default(autoincrement())
+  detalles_facturas     detalles_facturas[]
+  detalles_pedidos      detalles_pedidos[]
+  categorias            categorias              @relation(fields: [id_categoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productos_categorias")
+  productos_proveedores productos_proveedores[]
+}
+
+model productos_proveedores {
+  id           Int           @id @default(autoincrement())
+  precio       Decimal       @db.Money
+  estado       Boolean       @default(true)
+  id_producto  Int           @default(autoincrement())
+  id_proveedor Int           @default(autoincrement())
+  detalles_np  detalles_np[]
+  productos    productos     @relation(fields: [id_producto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productosproveedores_productos")
+  proveedores  proveedores   @relation(fields: [id_proveedor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productosproveedores_proveedores")
+}
+
+model proveedores {
+  id                    Int                     @id @default(autoincrement())
+  nombre                String                  @db.VarChar(60)
+  email                 String                  @db.VarChar(60)
+  telefono              String                  @db.VarChar(30)
+  direccion             String                  @db.VarChar(60)
+  codigo_postal         Int
+  estado                Boolean                 @default(true)
+  id_tipo_iva           Int                     @default(autoincrement())
+  notas_pedido          notas_pedido[]
+  productos_proveedores productos_proveedores[]
+  tipos_iva             tipos_iva               @relation(fields: [id_tipo_iva], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_proveedores_tiposiva")
+}
+
+model roles {
+  id       Int        @id @default(autoincrement())
+  nombre   String     @db.VarChar(15)
+  estado   Boolean    @default(true)
+  usuarios usuarios[]
+}
+
+model tipos_compra {
+  id           Int            @id @default(autoincrement())
+  nombre       String         @db.VarChar(30)
+  estado       Boolean        @default(true)
+  notas_pedido notas_pedido[]
+}
+
+model tipos_iva {
+  id          Int           @id @default(autoincrement())
+  nombre      String        @db.VarChar(15)
+  descripcion String        @db.VarChar(80)
+  estado      Boolean       @default(true)
+  proveedores proveedores[]
+}
+
+model tipos_pago {
+  id     Int     @id @default(autoincrement())
+  nombre String  @db.VarChar(15)
+  estado Boolean @default(true)
+}
+
+model usuarios {
+  id                 Int            @id @default(autoincrement())
+  nombre             String         @db.VarChar(80)
+  apellido           String         @db.VarChar(80)
+  email              String         @db.VarChar(80)
+  password           String         @db.VarChar(120)
+  token_confirmacion String?        @db.VarChar(120)
+  cuenta_confirmada  Boolean        @default(false)
+  direccion          String         @db.VarChar(60)
+  codigo_postal      Int
+  telefono           String?        @db.VarChar(30)
+  fecha_nacimiento   DateTime?      @db.Date
+  estado             Boolean        @default(true)
+  id_rol             Int            @default(autoincrement())
+  facturas           facturas[]
+  ganancias          ganancias[]
+  notas_pedido       notas_pedido[]
+  pedidos            pedidos[]
+  roles              roles          @relation(fields: [id_rol], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuarios_roles")
+}
