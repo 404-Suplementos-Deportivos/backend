@@ -9,6 +9,7 @@ export interface CreateUserDto {
   codigoPostal: number
   telefono?: string
   fechaNacimiento?: Date
+  idRol?: number
 }
 
 const createUserSchema = z.object({
@@ -27,6 +28,9 @@ const createUserSchema = z.object({
   fechaNacimiento: z.date({
     invalid_type_error: "Formato de fecha inválido",
   }).optional(),
+  idRol: z.number({
+    invalid_type_error: "Rol debe ser un número",
+  }).int().min(1, 'El rol debe ser mayor a 0').optional(),
 })
 type CreateUserSchemaType = z.infer<typeof createUserSchema>;
 export { createUserSchema, CreateUserSchemaType }
