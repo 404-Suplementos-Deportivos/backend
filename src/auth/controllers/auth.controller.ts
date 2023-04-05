@@ -7,30 +7,37 @@ import {
   Body,
   Param,
   Res,
+  Req,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common'
-import { Response } from 'express'
+import { Response, Request } from 'express'
+import { JwtService } from '@nestjs/jwt'
+import { JwtAuthGuard } from '../guards/jwt-auth.guard'
+import { RolesGuard } from '../guards/roles.guard'
+import { Roles } from '../decorators/roles.decorator'
 import { MailerService } from '@nestjs-modules/mailer/dist'
 import { AuthService } from '../services/auth.service'
 import configuration from 'src/config/configuration'
-import { CreateUserDto, createUserSchema } from '../dto/create-user.dto'
-import { ForgotPassDto, forgotPassSchema } from '../dto/forgot-pass.dto'
-import { RecuperatePassDto, recuperatePassSchema } from '../dto/recuperate-pass.dto'
+import { RegisterAuthDto, registerAuthSchema } from '../dto/RegisterAuthDto'
+import { ForgotPassDto, forgotPassSchema } from '../dto/ForgotPasswordDto'
+import { RecuperatePassDto, recuperatePassSchema } from '../dto/RecuperatePassDto'
+import { LoginAuthDto, loginAuthSchema } from '../dto/LoginAuthDto'
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService, private mailService: MailerService) {}
+  constructor(private authService: AuthService, private mailService: MailerService, private jwtService: JwtService) {}
 
   @Post('register')
-  async createUser(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
+  async createUser(@Body() registerAuthDto: RegisterAuthDto, @Res() res: Response) {
     try {
-      const validatedCreateUserDto = createUserSchema.parse(createUserDto)
+      const validatedRegisterAuthDto = registerAuthSchema.parse(registerAuthDto)
 
       // Validar existencia anterior de email
-      const userExists = await this.authService.getUserByEmail(validatedCreateUserDto.email)
+      const userExists = await this.authService.getUserByEmail(validatedRegisterAuthDto.email)
       if(userExists) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Usuario ya existente' })
 
-      const user = await this.authService.createUser(createUserDto)
+      const user = await this.authService.createUser(registerAuthDto)
 
       // Enviar mail de confirmación con token
       await this.mailService.sendMail({
@@ -138,11 +145,35 @@ export class AuthController {
     }
   }
 
-  // Get Profile mediante JWT
-  @Get('profile')
-  async getProfile(@Res() res: Response) {
+  @Post('login')
+  async login(@Body() loginAuthDto: LoginAuthDto, @Res() res: Response) {
     try {
+      const validatedLoginAuthDto = loginAuthSchema.parse(loginAuthDto)
 
+      const user = await this.authService.validateUser(loginAuthDto)
+      if(!user) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Usuario o contraseña incorrectos' })
+
+      const token = await this.jwtService.signAsync({ 
+        id: user.id,
+        email: user.email,
+        nombre: user.nombre,
+        rol: user.roles.nombre,
+      })
+      const { password, ...userResponse } = user
+
+      return res.status(HttpStatus.OK).json({ ...userResponse, token})
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    }
+  }
+
+  // Get Profile mediante JWT
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Administrador')
+  @Get('profile')
+  async getProfile(@Req() req: Request, @Res() res: Response) {
+    try {
+      return res.status(HttpStatus.OK).json(req.user)
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
     }

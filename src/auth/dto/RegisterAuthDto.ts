@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export interface CreateUserDto {
+export interface RegisterAuthDto {
   nombre: string
   apellido: string
   email: string
@@ -12,7 +12,7 @@ export interface CreateUserDto {
   idRol?: number
 }
 
-const createUserSchema = z.object({
+const registerAuthSchema = z.object({
   nombre: z.string().nonempty('El nombre no puede estar vacío'),
   apellido: z.string().nonempty('El apellido no puede estar vacío'),
   email: z.string().email('El email no es válido'),
@@ -32,5 +32,5 @@ const createUserSchema = z.object({
     invalid_type_error: "Rol debe ser un número",
   }).int().min(1, 'El rol debe ser mayor a 0').optional(),
 })
-type CreateUserSchemaType = z.infer<typeof createUserSchema>;
-export { createUserSchema, CreateUserSchemaType }
+type RegisterAuthSchemaType = z.infer<typeof registerAuthSchema>;
+export { registerAuthSchema, RegisterAuthSchemaType }
