@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Patch,
-  Delete,
   Body,
   Param,
   Res,
@@ -14,8 +13,6 @@ import {
 import { Response, Request } from 'express'
 import { JwtService } from '@nestjs/jwt'
 import { JwtAuthGuard } from '../guards/jwt-auth.guard'
-import { RolesGuard } from '../guards/roles.guard'
-import { Roles } from '../decorators/roles.decorator'
 import { MailerService } from '@nestjs-modules/mailer/dist'
 import { AuthService } from '../services/auth.service'
 import configuration from 'src/config/configuration'
@@ -168,8 +165,7 @@ export class AuthController {
   }
 
   // Get Profile mediante JWT
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('Administrador')
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getProfile(@Req() req: Request, @Res() res: Response) {
     try {
