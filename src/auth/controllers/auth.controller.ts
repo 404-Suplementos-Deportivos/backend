@@ -55,7 +55,6 @@ export class AuthController {
           <p>Si tu no creaste esta cuenta, puedes ignorar el mensaje.</p>
         `
       })
-
       return res.status(HttpStatus.OK).json({ message: 'Usuario creado correctamente' })
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
