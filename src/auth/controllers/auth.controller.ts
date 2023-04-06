@@ -28,6 +28,7 @@ export class AuthController {
   @Post('register')
   async createUser(@Body() registerAuthDto: RegisterAuthDto, @Res() res: Response) {
     try {
+      if(registerAuthDto.fechaNacimiento) registerAuthDto.fechaNacimiento = new Date(registerAuthDto.fechaNacimiento).toISOString()
       const validatedRegisterAuthDto = registerAuthSchema.parse(registerAuthDto)
 
       // Validar existencia anterior de email
