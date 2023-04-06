@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from 'src/services/prisma.service';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from '../guards/jwt.strategy';
+import { JwtStrategy } from '../strategies/jwt.strategy';
 import { MailerModule } from '@nestjs-modules/mailer';
 import configuration from 'src/config/configuration';
 import { AuthController } from '../controllers/auth.controller';
