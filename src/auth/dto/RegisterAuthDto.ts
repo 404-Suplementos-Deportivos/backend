@@ -7,8 +7,8 @@ export interface RegisterAuthDto {
   password: string
   direccion: string
   codigoPostal: number
-  telefono?: string
-  fechaNacimiento?: Date
+  telefono?: string | null
+  fechaNacimiento?: Date | null
   idRol?: number
 }
 
@@ -24,10 +24,10 @@ const registerAuthSchema = z.object({
   }).int().min(0, 'El código postal no puede ser negativo'),
   telefono: z.string({
     invalid_type_error: "El teléfono debe tener el formato +54 11 1234-5678",
-  }).optional(),
+  }).optional().nullable(),
   fechaNacimiento: z.date({
     invalid_type_error: "Formato de fecha inválido",
-  }).optional(),
+  }).optional().nullable(),
   idRol: z.number({
     invalid_type_error: "Rol debe ser un número",
   }).int().min(1, 'El rol debe ser mayor a 0').optional(),
