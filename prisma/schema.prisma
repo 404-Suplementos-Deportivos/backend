@@ -205,16 +205,16 @@ model usuarios {
   id                 Int            @id @default(autoincrement())
   nombre             String         @db.VarChar(80)
   apellido           String         @db.VarChar(80)
-  email              String         @db.VarChar(80)
+  email              String         @unique @db.VarChar(80)
   password           String         @db.VarChar(120)
-  token_confirmacion String?        @db.VarChar(120)
+  token_confirmacion String?        @unique @db.VarChar(120)
   cuenta_confirmada  Boolean        @default(false)
   direccion          String         @db.VarChar(60)
   codigo_postal      Int
   telefono           String?        @db.VarChar(30)
   fecha_nacimiento   DateTime?      @db.Date
   estado             Boolean        @default(true)
-  id_rol             Int            @default(autoincrement())
+  id_rol             Int            @default(2)
   facturas           facturas[]
   ganancias          ganancias[]
   notas_pedido       notas_pedido[]
