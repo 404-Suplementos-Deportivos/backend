@@ -145,7 +145,6 @@ export class AuthController {
   async login(@Body() loginAuthDto: LoginAuthDto, @Res() res: Response) {
     try {
       const validatedLoginAuthDto = loginAuthSchema.parse(loginAuthDto)
-
       const user = await this.authService.validateUser(loginAuthDto)
       if(!user) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Usuario o contraseña incorrectos' })
 
