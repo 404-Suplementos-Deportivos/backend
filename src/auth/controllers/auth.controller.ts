@@ -37,26 +37,30 @@ export class AuthController {
 
       const user = await this.authService.createUser(registerAuthDto)
 
-      // Enviar mail de confirmación con token
-      await this.mailService.sendMail({
-        to: user.email,
-        from: configuration().nodemailer.auth.user,
-        subject: '404 - Confirmar tu cuenta',
-        template: 'confirm-account',
-        context: {
-          nombre: user.nombre,
-          token: user.token_confirmacion,
-        },
-        text: 'Confirma tu cuenta de 404 y comienza a comprar los mejores suplementos deportivos',
-        html: `
-          <h1>404 - Confirmar tu cuenta</h1>
-          <p>Hola ${user.nombre},</p>
-          <p>Para confirmar tu cuenta, haz click en el siguiente enlace:</p>
-          <a href="${configuration().frontendUrl}/confirmar/${user.token_confirmacion}">Confirmar Cuenta</a>
-          <p>Si tu no creaste esta cuenta, puedes ignorar el mensaje.</p>
-        `
-      })
-      return res.status(HttpStatus.OK).json({ message: 'Usuario creado correctamente' })
+      try {
+        // Enviar mail de confirmación con token
+        await this.mailService.sendMail({
+          to: user.email,
+          from: configuration().nodemailer.auth.user,
+          subject: '404 - Confirmar tu cuenta',
+          template: 'confirm-account',
+          context: {
+            nombre: user.nombre,
+            token: user.token_confirmacion,
+          },
+          text: 'Confirma tu cuenta de 404 y comienza a comprar los mejores suplementos deportivos',
+          html: `
+            <h1>404 - Confirmar tu cuenta</h1>
+            <p>Hola ${user.nombre},</p>
+            <p>Para confirmar tu cuenta, haz click en el siguiente enlace:</p>
+            <a href="${configuration().frontendUrl}/confirmar/${user.token_confirmacion}">Confirmar Cuenta</a>
+            <p>Si tu no creaste esta cuenta, puedes ignorar el mensaje.</p>
+          `
+        })
+      } catch (error) {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+      }
+      return res.status(HttpStatus.OK).json({ message: 'Cuenta creada correctamente, revise su correo' })
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
     }
