@@ -153,13 +153,13 @@ export class AuthController {
       const user = await this.authService.validateUser(loginAuthDto)
       if(!user) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Usuario o contraseña incorrectos' })
 
-      const token = await this.jwtService.signAsync({ 
+      const userResponse = {
         id: user.id,
         email: user.email,
         nombre: user.nombre,
         rol: user.roles.nombre,
-      })
-      const { password, ...userResponse } = user
+      }
+      const token = await this.jwtService.signAsync(userResponse)
 
       return res.status(HttpStatus.OK).json({ ...userResponse, token})
     } catch (error) {
