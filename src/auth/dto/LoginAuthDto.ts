@@ -5,6 +5,7 @@ export interface LoginAuthDto {
   nombre?: string
   email: string
   password: string
+  cuenta_confirmada?: boolean
   roles?: {
     nombre: string
   }

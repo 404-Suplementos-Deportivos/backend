@@ -153,6 +153,8 @@ export class AuthController {
       const user = await this.authService.validateUser(loginAuthDto)
       if(!user) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Usuario o contraseña incorrectos' })
 
+      if(!user.cuenta_confirmada) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Usuario o contraseña incorrectos' }) 
+
       const userResponse = {
         id: user.id,
         email: user.email,

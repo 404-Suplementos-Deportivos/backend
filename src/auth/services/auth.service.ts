@@ -84,6 +84,7 @@ export class AuthService {
         nombre: true,
         email: true,
         password: true,
+        cuenta_confirmada: true,
         roles: {
           select: {
             nombre: true
