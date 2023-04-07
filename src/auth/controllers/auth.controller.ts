@@ -163,7 +163,7 @@ export class AuthController {
       }
       const token = await this.jwtService.signAsync(userResponse)
 
-      return res.status(HttpStatus.OK).json({ ...userResponse, token})
+      return res.status(HttpStatus.OK).json({token})
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
     }
@@ -176,7 +176,7 @@ export class AuthController {
     try {
       return res.status(HttpStatus.OK).json(req.user)
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Su sesión ha expirado' })
     }
   }
 }
