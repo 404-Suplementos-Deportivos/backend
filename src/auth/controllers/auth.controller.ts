@@ -54,7 +54,7 @@ export class AuthController {
             <h1>404 - Confirmar tu cuenta</h1>
             <p>Hola ${user.nombre},</p>
             <p>Para confirmar tu cuenta, haz click en el siguiente enlace:</p>
-            <a href="${configuration().frontendUrl}/auth/confirm-account?token=${user.token_confirmacion}">Confirmar Cuenta</a>
+            <a href="${configuration().frontendUrl}/account/confirm-account?token=${user.token_confirmacion}">Confirmar Cuenta</a>
             <p>Si tu no creaste esta cuenta, puedes ignorar el mensaje.</p>
           `
         })
@@ -112,7 +112,7 @@ export class AuthController {
           <h1>404 - Confirmar tu cuenta</h1>
           <p>Hola ${user.nombre},</p>
           <p>Para confirmar tu cuenta, haz click en el siguiente enlace:</p>
-          <a href="${configuration().frontendUrl}/auth/confirm-account?token=${token}">Confirmar Cuenta</a>
+          <a href="${configuration().frontendUrl}/account/confirm-account?token=${token}">Confirmar Cuenta</a>
           <p>Si tu no creaste esta cuenta, puedes ignorar el mensaje.</p>
         `
       })
@@ -151,7 +151,7 @@ export class AuthController {
           <h1>404 - Restablecer contraseña</h1>
           <p>Hola ${user.nombre},</p>
           <p>Para restablecer tu contraseña, haz click en el siguiente enlace:</p>
-          <a href="${configuration().frontendUrl}/auth/forgot-password?token=${token}">Restablecer Contraseña</a>
+          <a href="${configuration().frontendUrl}/account/forgot-password?token=${token}">Restablecer Contraseña</a>
           <p>Si tu no solicitaste restablecer tu contraseña, puedes ignorar el mensaje.</p>
         `
       })
