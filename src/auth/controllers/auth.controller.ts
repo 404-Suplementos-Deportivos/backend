@@ -70,7 +70,7 @@ export class AuthController {
   async confirmUser(@Param('token') token: string, @Res() res: Response) {
     try {
       const user = await this.authService.confirmUser(token)
-      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
+      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Token no valido' })
 
       return res.status(HttpStatus.OK).json({ message: 'Usuario confirmado' })
     } catch (error) {
