@@ -66,7 +66,7 @@ export class AuthController {
     }
   }
 
-  @Get('confirm/:token')
+  @Get('confirm-account/:token')
   async confirmUser(@Param('token') token: string, @Res() res: Response) {
     try {
       const user = await this.authService.confirmUser(token)
