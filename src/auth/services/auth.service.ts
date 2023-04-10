@@ -59,7 +59,7 @@ export class AuthService {
   }
 
   async getUserByToken(token: string): Promise<UserModel> {
-    return this.prisma.usuarios.findFirst({ where: { token_confirmacion: token } })
+    return this.prisma.usuarios.findUnique({ where: { token_confirmacion: token } })
   }
 
   async updatePassword(id: number, password: string): Promise<UserModel> {
