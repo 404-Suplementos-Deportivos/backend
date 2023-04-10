@@ -7,10 +7,14 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getUsers(): Promise<UserModel[]> {
-    return this.prisma.usuarios.findMany()
+    const users = this.prisma.usuarios.findMany()
+    this.prisma.$disconnect();
+    return users;
   }
 
   async getUser(id: string): Promise<UserModel> {
-    return this.prisma.usuarios.findUnique({ where: { id: parseInt(id) } })
+    const user = this.prisma.usuarios.findUnique({ where: { id: parseInt(id) } })
+    this.prisma.$disconnect();
+    return user;
   }
 }

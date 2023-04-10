@@ -9,6 +9,7 @@ import {
   Req,
   HttpStatus,
   UseGuards,
+  Put,
 } from '@nestjs/common'
 import { Response, Request } from 'express'
 import { JwtService } from '@nestjs/jwt'
@@ -17,7 +18,6 @@ import { MailerService } from '@nestjs-modules/mailer/dist'
 import { AuthService } from '../services/auth.service'
 import configuration from 'src/config/configuration'
 import { RegisterAuthDto, registerAuthSchema } from '../dto/RegisterAuthDto'
-import { ResetTokenRegisterDto, resetTokenRegisterSchema } from '../dto/ResetTokenRegisterDto.'
 import { ForgotPassDto, forgotPassSchema } from '../dto/ForgotPasswordDto'
 import { RecuperatePassDto, recuperatePassSchema } from '../dto/RecuperatePassDto'
 import { LoginAuthDto, loginAuthSchema } from '../dto/LoginAuthDto'
@@ -64,6 +64,8 @@ export class AuthController {
       return res.status(HttpStatus.OK).json({ message: 'Cuenta creada correctamente, revise su correo' })
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
     }
   }
 
@@ -77,13 +79,15 @@ export class AuthController {
       return res.status(HttpStatus.OK).json({ message: 'Usuario confirmado' })
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Token no valido' })
+    } finally {
+      res.end()
     }
   }
 
   @Post('confirm-account/reset')
-  async resetConfirmUser(@Body() resetTokenRegisterDto: ResetTokenRegisterDto, @Res() res: Response) {
+  async resetConfirmUser(@Body() resetTokenRegisterDto: ForgotPassDto, @Res() res: Response) {
     try {
-      const validatedResetTokenRegisterDto = resetTokenRegisterSchema.parse(resetTokenRegisterDto)
+      const validatedResetTokenRegisterDto = forgotPassSchema.parse(resetTokenRegisterDto)
 
       const user = await this.authService.getUserByEmail(resetTokenRegisterDto.email)
       if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
@@ -115,6 +119,8 @@ export class AuthController {
       return res.status(HttpStatus.OK).json({ message: 'Email enviado correctamente' })
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
     }
   }
 
@@ -153,37 +159,39 @@ export class AuthController {
       return res.status(HttpStatus.OK).json({ message: 'Email enviado' })
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
     }
   }
 
   @Get('reset/:token')
-  async resetPassword(@Param('token') token: string, @Res() res: Response) {
+  async resetPassword (@Param('token') token: string, @Res() res: Response) {
     try {
       const user = await this.authService.getUserByToken(token)
-      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
+      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Token no válido' })
 
       return res.status(HttpStatus.OK).json({ message: 'Token válido' })
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
     }
   }
 
-  @Patch('reset/:token')
+  @Put('reset/:token')
   async updatePassword(@Param('token') token: string, @Body() recuperatePassDto: RecuperatePassDto, @Res() res: Response) {
     try {
+      const validatedRecuperatePassDto = recuperatePassSchema.parse(recuperatePassDto)
+
       const user = await this.authService.getUserByToken(token)
-      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
+      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Token no válido' })
 
-      const validatedRecuperatePassSchema = recuperatePassSchema.parse(recuperatePassDto)
-
-      const password = validatedRecuperatePassSchema.password
-      if(!password) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Contraseña no enviada' })
-
-      await this.authService.updatePassword(user.id, password)
-
+      await this.authService.updatePassword(user.id, validatedRecuperatePassDto.password)
       return res.status(HttpStatus.OK).json({ message: 'Contraseña actualizada' })
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
     }
   }
 
@@ -207,6 +215,8 @@ export class AuthController {
       return res.status(HttpStatus.OK).json({token})
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
     }
   }
 
@@ -218,6 +228,8 @@ export class AuthController {
       return res.status(HttpStatus.OK).json(req.user)
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Su sesión ha expirado' })
+    } finally {
+      res.end()
     }
   }
 }

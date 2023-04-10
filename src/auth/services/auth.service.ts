@@ -11,11 +11,13 @@ export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getUserByEmail(email: string): Promise<UserModel> {
-    return this.prisma.usuarios.findUnique({ where: { email } })
+    const user = this.prisma.usuarios.findUnique({ where: { email } })
+    this.prisma.$disconnect();
+    return user;
   }
 
   async createUser(data: RegisterAuthDto): Promise<UserModel> {
-    return this.prisma.usuarios.create({ 
+    const user = this.prisma.usuarios.create({ 
       data: {
         nombre: data.nombre,
         apellido: data.apellido,
@@ -29,10 +31,12 @@ export class AuthService {
         id_rol: data.idRol,
       }
     })
+    this.prisma.$disconnect();
+    return user;
   }
 
   async confirmUser(token: string): Promise<UserModel> {
-    return this.prisma.usuarios.update({
+    const user = this.prisma.usuarios.update({
       where: { 
         token_confirmacion: token
       },
@@ -41,6 +45,8 @@ export class AuthService {
         cuenta_confirmada: true
       }
     })
+    this.prisma.$disconnect();
+    return user;
   }
 
   async generateToken(id: number): Promise<string> {
@@ -55,15 +61,18 @@ export class AuthService {
         token_confirmacion: true
       }
     });
+    this.prisma.$disconnect();
     return updatedUser.token_confirmacion;
   }
 
   async getUserByToken(token: string): Promise<UserModel> {
-    return this.prisma.usuarios.findUnique({ where: { token_confirmacion: token } })
+    const user = this.prisma.usuarios.findUnique({ where: { token_confirmacion: token } })
+    this.prisma.$disconnect();
+    return user;
   }
 
   async updatePassword(id: number, password: string): Promise<UserModel> {
-    return this.prisma.usuarios.update({
+    const user = this.prisma.usuarios.update({
       where: { 
         id
       },
@@ -72,6 +81,8 @@ export class AuthService {
         token_confirmacion: null,
       }
     })
+    this.prisma.$disconnect();
+    return user;
   }
 
   async validateUser(data: LoginAuthDto): Promise<LoginAuthDto> {
@@ -92,6 +103,7 @@ export class AuthService {
         }
       }
     })
+    this.prisma.$disconnect();
     if(user) {
       const match = await matchPassword(data.password, user.password);
       if(match) {

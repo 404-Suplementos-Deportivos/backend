@@ -25,6 +25,8 @@ export class UsersController {
       return res.status(HttpStatus.OK).json(users)
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
     }
   }
 
@@ -37,6 +39,8 @@ export class UsersController {
       return res.status(HttpStatus.OK).json(user)
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
     }
   }
 }
