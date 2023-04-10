@@ -17,6 +17,7 @@ import { MailerService } from '@nestjs-modules/mailer/dist'
 import { AuthService } from '../services/auth.service'
 import configuration from 'src/config/configuration'
 import { RegisterAuthDto, registerAuthSchema } from '../dto/RegisterAuthDto'
+import { ResetTokenRegisterDto, resetTokenRegisterSchema } from '../dto/ResetTokenRegisterDto.'
 import { ForgotPassDto, forgotPassSchema } from '../dto/ForgotPasswordDto'
 import { RecuperatePassDto, recuperatePassSchema } from '../dto/RecuperatePassDto'
 import { LoginAuthDto, loginAuthSchema } from '../dto/LoginAuthDto'
@@ -69,14 +70,54 @@ export class AuthController {
   @Get('confirm-account/:token')
   async confirmUser(@Param('token') token: string, @Res() res: Response) {
     try {
-      const user = await this.authService.confirmUser(token)
+      const user = await this.authService.getUserByToken(token)
       if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Token no válido' })
 
+      await this.authService.confirmUser(token)
       return res.status(HttpStatus.OK).json({ message: 'Usuario confirmado' })
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Token no valido' })
     }
   }
+
+  @Post('confirm-account/reset')
+  async resetConfirmUser(@Body() resetTokenRegisterDto: ResetTokenRegisterDto, @Res() res: Response) {
+    try {
+      const validatedResetTokenRegisterDto = resetTokenRegisterSchema.parse(resetTokenRegisterDto)
+
+      const user = await this.authService.getUserByEmail(resetTokenRegisterDto.email)
+      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
+
+      if(user.cuenta_confirmada) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Usuario ya confirmado' })
+
+      // Generar token de confirmación
+      const token = await this.authService.generateToken(user.id)
+
+      // Enviar mail de confirmación con token
+      await this.mailService.sendMail({
+        to: user.email,
+        from: configuration().nodemailer.auth.user,
+        subject: '404 - Confirmar tu cuenta',
+        template: 'confirm-account',
+        context: {
+          nombre: user.nombre,
+          token: token,
+        },
+        text: 'Confirma tu cuenta de 404 y comienza a comprar los mejores suplementos deportivos',
+        html: `
+          <h1>404 - Confirmar tu cuenta</h1>
+          <p>Hola ${user.nombre},</p>
+          <p>Para confirmar tu cuenta, haz click en el siguiente enlace:</p>
+          <a href="${configuration().frontendUrl}/confirmar/${token}">Confirmar Cuenta</a>
+          <p>Si tu no creaste esta cuenta, puedes ignorar el mensaje.</p>
+        `
+      })
+      return res.status(HttpStatus.OK).json({ message: 'Email enviado correctamente' })
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    }
+  }
+
 
   @Post('forgot-password')
   async forgotPassword(@Body() forgotPassDto: ForgotPassDto, @Res() res: Response) {
