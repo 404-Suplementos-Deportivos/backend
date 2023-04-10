@@ -12,8 +12,12 @@ export class UsersService {
     return users;
   }
 
-  async getUser(id: string): Promise<UserModel> {
-    const user = this.prisma.usuarios.findUnique({ where: { id: parseInt(id) } })
+  async getUserById(id: string): Promise<UserModel> {
+    const user = this.prisma.usuarios.findUnique({ 
+      where: { 
+        id: parseInt(id) 
+      },
+    })
     this.prisma.$disconnect();
     return user;
   }
