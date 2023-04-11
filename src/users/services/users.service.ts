@@ -21,4 +21,36 @@ export class UsersService {
     this.prisma.$disconnect();
     return user;
   }
+
+  async getUserByEmail(email: string): Promise<number> {
+    const user = this.prisma.usuarios.findUnique({ 
+      where: { 
+        email 
+      },
+      select: {
+        id: true,
+      }
+    })
+    this.prisma.$disconnect();
+    return (await user).id
+  }
+
+  async updateUser(id: string, data: any): Promise<UserModel> {
+    const user = this.prisma.usuarios.update({
+      where: { 
+        id: parseInt(id)
+      },
+      data: {
+        nombre: data.nombre,
+        apellido: data.apellido,
+        email: data.email,
+        direccion: data.direccion,
+        codigo_postal: data.codigoPostal,
+        telefono: data.telefono,
+        fecha_nacimiento: data.fechaNacimiento,
+      }
+    })
+    this.prisma.$disconnect();
+    return user;
+  }
 }
