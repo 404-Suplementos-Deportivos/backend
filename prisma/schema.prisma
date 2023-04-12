@@ -15,11 +15,12 @@ model banners {
 }
 
 model categorias {
-  id          Int         @id @default(autoincrement())
-  nombre      String      @db.VarChar(60)
-  descripcion String?     @db.VarChar(120)
-  estado      Boolean     @default(true)
-  productos   productos[]
+  id            Int             @id @default(autoincrement())
+  nombre        String          @db.VarChar(60)
+  descripcion   String?         @db.VarChar(200)
+  estado        Boolean         @default(true)
+  productos     productos[]
+  subcategorias subcategorias[]
 }
 
 model cupones_descuento {
@@ -35,8 +36,8 @@ model detalles_facturas {
   cantidad    Int
   precio      Decimal   @db.Money
   descuento   Int
-  id_producto Int       @default(autoincrement())
-  id_factura  Int       @default(autoincrement())
+  id_producto Int       @default(0)
+  id_factura  Int       @default(0)
   facturas    facturas  @relation(fields: [id_factura], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesfacturas_facturas")
   productos   productos @relation(fields: [id_producto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesfacturas_productos")
 }
@@ -48,8 +49,8 @@ model detalles_np {
   precio                 Decimal               @db.Money
   descuento              Int
   estado                 Boolean
-  id_productos_proveedor Int                   @default(autoincrement())
-  id_nota_pedido         Int                   @default(autoincrement())
+  id_productos_proveedor Int                   @default(0)
+  id_nota_pedido         Int                   @default(0)
   notas_pedido           notas_pedido          @relation(fields: [id_nota_pedido], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesnp_notaspedido")
   productos_proveedores  productos_proveedores @relation(fields: [id_productos_proveedor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesnp_productosproveedores")
 }
@@ -58,8 +59,8 @@ model detalles_pedidos {
   id          Int       @id @default(autoincrement())
   cantidad    Int
   precio      Decimal   @db.Money
-  id_producto Int       @default(autoincrement())
-  id_pedido   Int       @default(autoincrement())
+  id_producto Int       @default(0)
+  id_pedido   Int       @default(0)
   pedidos     pedidos   @relation(fields: [id_pedido], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallespedidos_pedidos")
   productos   productos @relation(fields: [id_producto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallespedidos_productos")
 }
@@ -89,9 +90,9 @@ model facturas {
   id                Int                 @id @default(autoincrement())
   fecha             DateTime            @db.Date
   fecha_vencimiento DateTime            @db.Date
-  numero_factura    Int                 @default(autoincrement())
-  id_usuario        Int                 @default(autoincrement())
-  id_estado         Int                 @default(autoincrement())
+  numero_factura    Int                 @default(0)
+  id_usuario        Int                 @default(0)
+  id_estado         Int                 @default(0)
   detalles_facturas detalles_facturas[]
   estados_factura   estados_factura     @relation(fields: [id_estado], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_facturas_estadosfactura")
   usuarios          usuarios            @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_facturas_usuarios")
@@ -101,7 +102,7 @@ model ganancias {
   id         Int      @id @default(autoincrement())
   vigencia   DateTime @db.Date
   porcentaje Decimal  @db.Decimal
-  id_usuario Int      @default(autoincrement())
+  id_usuario Int      @default(0)
   usuarios   usuarios @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_ganancias_usuarios")
 }
 
@@ -110,10 +111,10 @@ model notas_pedido {
   fecha             DateTime      @db.Date
   version           Int
   fecha_vencimiento DateTime      @db.Date
-  id_usuario        Int           @default(autoincrement())
-  id_proveedor      Int           @default(autoincrement())
-  id_estado_np      Int           @default(autoincrement())
-  id_tipo_compra    Int           @default(autoincrement())
+  id_usuario        Int           @default(0)
+  id_proveedor      Int           @default(0)
+  id_estado_np      Int           @default(0)
+  id_tipo_compra    Int           @default(0)
   detalles_np       detalles_np[]
   estados_np        estados_np    @relation(fields: [id_estado_np], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_notaspedido_estadosnp")
   proveedores       proveedores   @relation(fields: [id_proveedor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_notaspedido_proveedor")
@@ -125,8 +126,8 @@ model pedidos {
   id               Int                @id @default(autoincrement())
   fecha            DateTime           @db.Date
   descuento        Int
-  id_usuario       Int                @default(autoincrement())
-  id_estado_pedido Int                @default(autoincrement())
+  id_usuario       Int                @default(0)
+  id_estado_pedido Int                @default(0)
   detalles_pedidos detalles_pedidos[]
   estados_pedido   estados_pedido     @relation(fields: [id_estado_pedido], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedidos_estadospedido")
   usuarios         usuarios           @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedidos_usuarios")
@@ -141,10 +142,12 @@ model productos {
   stock                 Int                     @default(0)
   stock_minimo          Int
   estado                Boolean                 @default(true)
-  id_categoria          Int                     @default(autoincrement())
+  id_categoria          Int                     @default(0)
+  id_subcategoria       Int                     @default(0)
   detalles_facturas     detalles_facturas[]
   detalles_pedidos      detalles_pedidos[]
   categorias            categorias              @relation(fields: [id_categoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productos_categorias")
+  subcategorias         subcategorias           @relation(fields: [id_subcategoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productos_subcategorias")
   productos_proveedores productos_proveedores[]
 }
 
@@ -152,8 +155,8 @@ model productos_proveedores {
   id           Int           @id @default(autoincrement())
   precio       Decimal       @db.Money
   estado       Boolean       @default(true)
-  id_producto  Int           @default(autoincrement())
-  id_proveedor Int           @default(autoincrement())
+  id_producto  Int           @default(0)
+  id_proveedor Int           @default(0)
   detalles_np  detalles_np[]
   productos    productos     @relation(fields: [id_producto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productosproveedores_productos")
   proveedores  proveedores   @relation(fields: [id_proveedor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productosproveedores_proveedores")
@@ -167,7 +170,7 @@ model proveedores {
   direccion             String                  @db.VarChar(60)
   codigo_postal         Int
   estado                Boolean                 @default(true)
-  id_tipo_iva           Int                     @default(autoincrement())
+  id_tipo_iva           Int                     @default(0)
   notas_pedido          notas_pedido[]
   productos_proveedores productos_proveedores[]
   tipos_iva             tipos_iva               @relation(fields: [id_tipo_iva], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_proveedores_tiposiva")
@@ -220,4 +223,14 @@ model usuarios {
   notas_pedido       notas_pedido[]
   pedidos            pedidos[]
   roles              roles          @relation(fields: [id_rol], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuarios_roles")
+}
+
+model subcategorias {
+  id           Int         @id @default(autoincrement())
+  nombre       String      @db.VarChar(60)
+  descripcion  String?     @db.VarChar(200)
+  estado       Boolean     @default(true)
+  id_categoria Int         @default(0)
+  productos    productos[]
+  categorias   categorias  @relation(fields: [id_categoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_categorias_subcategorias")
 }
