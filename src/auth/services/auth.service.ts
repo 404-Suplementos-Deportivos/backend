@@ -17,7 +17,7 @@ export class AuthService {
   }
 
   async createUser(data: RegisterAuthDto): Promise<UserModel> {
-    const user = this.prisma.usuarios.create({ 
+    const user = await this.prisma.usuarios.create({ 
       data: {
         nombre: data.nombre,
         apellido: data.apellido,
@@ -36,7 +36,7 @@ export class AuthService {
   }
 
   async confirmUser(token: string): Promise<UserModel> {
-    const user = this.prisma.usuarios.update({
+    const user = await this.prisma.usuarios.update({
       where: { 
         token_confirmacion: token
       },
@@ -66,13 +66,13 @@ export class AuthService {
   }
 
   async getUserByToken(token: string): Promise<UserModel> {
-    const user = this.prisma.usuarios.findUnique({ where: { token_confirmacion: token } })
+    const user = await this.prisma.usuarios.findUnique({ where: { token_confirmacion: token } })
     this.prisma.$disconnect();
     return user;
   }
 
   async updatePassword(id: number, password: string): Promise<UserModel> {
-    const user = this.prisma.usuarios.update({
+    const user = await this.prisma.usuarios.update({
       where: { 
         id
       },

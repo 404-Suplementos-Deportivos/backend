@@ -6,5 +6,5 @@ export interface UserDTO {
   direccion: string
   codigoPostal: number
   telefono?: string | null
-  fechaNacimiento?: Date | null
+  fechaNacimiento?: string | null
 }

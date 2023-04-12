@@ -14,6 +14,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UsersService } from '../services/users.service';
 import { UserDTO } from '../dto/UserDto'
 import { JwtPayloadModel } from 'src/auth/models/token.model';
+import { formatDate } from 'src/utils/helpers';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -51,7 +52,7 @@ export class UsersController {
         direccion: user.direccion,
         codigoPostal: user.codigo_postal,
         telefono: user.telefono,
-        fechaNacimiento: user.fecha_nacimiento,
+        fechaNacimiento: formatDate(user.fecha_nacimiento) // Tipo Date de la BD
       }
 
       return res.status(HttpStatus.OK).json(userResponse)
@@ -65,6 +66,8 @@ export class UsersController {
   @Put(':id')
   async updateUser(@Param('id') id: string, @Body() data: UserDTO, @Req() req: Request, @Res() res: Response) {
     try {
+      // Convertir Fecha de String a Fecha para la BD
+      if(data.fechaNacimiento) data.fechaNacimiento = new Date(data.fechaNacimiento).toISOString()
       const user = await this.usersService.getUserById(id);
       if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
       
@@ -85,11 +88,12 @@ export class UsersController {
         direccion: userUpdated.direccion,
         codigoPostal: userUpdated.codigo_postal,
         telefono: userUpdated.telefono,
-        fechaNacimiento: userUpdated.fecha_nacimiento,
+        fechaNacimiento: formatDate(userUpdated.fecha_nacimiento) // Tipo Date de la BD
       }
 
       return res.status(HttpStatus.OK).json(userResponse)
     } catch (error) {
+      console.log( error )
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
     } finally {
       res.end()
