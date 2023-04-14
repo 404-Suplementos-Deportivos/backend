@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common'
 import { Response, Request } from 'express'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UsersService } from '../services/users.service';
 import { UserDTO } from '../dto/UserDto'
 import { JwtPayloadModel } from 'src/auth/models/token.model';
@@ -22,6 +23,7 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
+  @Roles('Administrador')
   async getUsers(@Res() res: Response) {
     try {
       const users = await this.usersService.getUsers();

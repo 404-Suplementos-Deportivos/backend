@@ -1,6 +1,7 @@
 export default () => ({
   port: parseInt(process.env.PORT, 10) || 3000,
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+  frontendUrlAdmin: process.env.FRONTEND_URL_ADMIN || 'http://localhost:5000',
   database: {
     url: process.env.DATABASE_URL
   },
