@@ -11,6 +11,7 @@ export interface Producto {
   precioLista: number;
   stock: number;
   stockMinimo: number;
+  estado?: boolean;
   categoria?: Categoria;
   subcategoria?: Subcategoria;
 }

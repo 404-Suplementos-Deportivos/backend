@@ -61,6 +61,7 @@ export class ProductsService {
         precioLista: Number(product.precio_lista),
         stock: product.stock,
         stockMinimo: product.stock_minimo,
+        estado: product.estado,
         categoria: {
           id: product.categorias.id,
           nombre: product.categorias.nombre,
@@ -96,6 +97,7 @@ export class ProductsService {
       precioLista: Number(product.precio_lista),
       stock: product.stock,
       stockMinimo: product.stock_minimo,
+      estado: product.estado,
       categoria: {
         id: product.categorias.id,
         nombre: product.categorias.nombre,
