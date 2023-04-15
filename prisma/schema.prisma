@@ -136,7 +136,7 @@ model pedidos {
 model productos {
   id                    Int                     @id @default(autoincrement())
   nombre                String                  @db.VarChar(80)
-  descripcion           String                  @db.VarChar(200)
+  descripcion           String                  @db.VarChar(600)
   url_imagen            String                  @db.VarChar
   precio_lista          Decimal                 @db.Money
   stock                 Int                     @default(0)
