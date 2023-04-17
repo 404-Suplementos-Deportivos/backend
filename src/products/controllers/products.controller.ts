@@ -10,6 +10,7 @@ import {
   HttpStatus,
   UseGuards,
   Put,
+  Delete,
 } from '@nestjs/common'
 import { Response, Request } from 'express'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -18,23 +19,30 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { ProductsService } from '../services/products.service';
 import { Producto } from '../models/Producto';
 import { CreateProductDto } from '../dto/create-product.dto';
+import { CreateProfitDto } from '../dto/createProfitDto';
+import { JwtPayloadModel } from 'src/auth/models/token.model';
 
 @UseGuards(JwtAuthGuard)
 @Controller('products')
 export class ProductsController {
+  // TODO: Orden de Prioridad de Rutas
   constructor(private readonly productsService: ProductsService) {}
 
-  @Get('/categories')
+  // ! Busqueda
+  @Get('/search/:search')
   @Public()
-  async findAllCategories(@Res() res: Response): Promise<void> {
+  async searchProducts(@Param('search') search: string, @Res() res: Response): Promise<void> {
     try {
-      const categories = await this.productsService.findAllCategories()
-      res.status(HttpStatus.OK).json(categories)
+      const products = await this.productsService.searchProducts(search)
+      if(!products) throw new Error('No se encontraron productos.')
+
+      res.status(HttpStatus.OK).json(products)
     } catch (error) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
     }
   }
 
+  // ! Subcategorias
   @Get('/subcategories/:id')
   @Public()
   async findAllSubCategories(@Param('id') id: string, @Res() res: Response): Promise<void> {
@@ -46,14 +54,27 @@ export class ProductsController {
     }
   }
 
-  @Get()
+  // ! Categorias
+  @Get('/categories')
   @Public()
-  async findAllProducts(@Res() res: Response): Promise<void> {
+  async findAllCategories(@Res() res: Response): Promise<void> {
     try {
-      const products = await this.productsService.findAllProducts()
-      if(!products) throw new Error('No se encontraron productos.')
+      const categories = await this.productsService.findAllCategories()
+      res.status(HttpStatus.OK).json(categories)
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    }
+  }
 
-      res.status(HttpStatus.OK).json(products)
+  // ! Ganancias
+  @Get('/profits')
+  @Public()
+  async getProfits(@Res() res: Response): Promise<void> {
+    try {
+      const profits = await this.productsService.getProfits()
+      if(!profits) throw new Error('No se encontraron ganancias.')
+
+      res.status(HttpStatus.OK).json(profits)
     } catch (error) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
     }
@@ -66,7 +87,62 @@ export class ProductsController {
       const product = await this.productsService.findProductById(id)
       if(!product) throw new Error('No se encontró el producto.')
 
+      const lastProfit = await this.productsService.getLatestProfit()
+      if(!lastProfit) throw new Error('No se encontró la ganancia.')
+
+      product.precioVenta = product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)
+
       res.status(HttpStatus.OK).json(product)
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    }
+  }
+
+  @Post('/profits')
+  @Roles('Administrador')
+  async createProfit(@Body() profit: CreateProfitDto, @Req() req: Request, @Res() res: Response): Promise<void> {
+    try {
+      const userJwt = req.user as JwtPayloadModel
+      profit.idUsuario = userJwt.id
+      profit.vigencia = new Date(profit.vigencia).toISOString()
+      const newProfit = await this.productsService.createProfit(profit)
+      if(!newProfit) throw new Error('No se pudo crear la ganancia.')
+
+      res.status(HttpStatus.CREATED).json(newProfit)
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    }
+  }
+
+  // ! Productos
+  @Get()
+  @Public()
+  async findAllProducts(@Res() res: Response): Promise<void> {
+    try {
+      const products = await this.productsService.findAllProducts()
+      if(!products) throw new Error('No se encontraron productos.')
+
+      const lastProfit = await this.productsService.getLatestProfit()
+      if(!lastProfit) throw new Error('No se encontró la ganancia.')
+
+      products.forEach(product => {
+        product.precioVenta = product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)
+      })
+
+      res.status(HttpStatus.OK).json(products)
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    }
+  }
+
+  @Delete('/profits/:id')
+  @Roles('Administrador')
+  async deleteProfit(@Param('id') id: string, @Res() res: Response): Promise<void> {
+    try {
+      const deletedProfit = await this.productsService.deleteProfit(id)
+      if(!deletedProfit) throw new Error('No se pudo eliminar la ganancia.')
+
+      res.status(HttpStatus.OK).json({message: 'Ganancia eliminada.'})
     } catch (error) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
     }

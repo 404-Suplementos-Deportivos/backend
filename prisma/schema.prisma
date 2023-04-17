@@ -101,7 +101,7 @@ model facturas {
 model ganancias {
   id         Int      @id @default(autoincrement())
   vigencia   DateTime @db.Date
-  porcentaje Decimal  @db.Decimal
+  porcentaje Decimal  @db.Decimal(5,2) @default(0)
   id_usuario Int      @default(0)
   usuarios   usuarios @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_ganancias_usuarios")
 }
