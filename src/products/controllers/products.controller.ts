@@ -7,6 +7,7 @@ import {
   Param,
   Res,
   Req,
+  Query,
   HttpStatus,
   UseGuards,
   Put,
@@ -27,20 +28,6 @@ import { JwtPayloadModel } from 'src/auth/models/token.model';
 export class ProductsController {
   // TODO: Orden de Prioridad de Rutas
   constructor(private readonly productsService: ProductsService) {}
-
-  // ! Busqueda
-  @Get('/search/:search')
-  @Public()
-  async searchProducts(@Param('search') search: string, @Res() res: Response): Promise<void> {
-    try {
-      const products = await this.productsService.searchProducts(search)
-      if(!products) throw new Error('No se encontraron productos.')
-
-      res.status(HttpStatus.OK).json(products)
-    } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
-    }
-  }
 
   // ! Subcategorias
   @Get('/subcategories/:id')
@@ -117,21 +104,25 @@ export class ProductsController {
   // ! Productos
   @Get()
   @Public()
-  async findAllProducts(@Res() res: Response): Promise<void> {
+  async findAllProducts(
+    @Query('categoria') categoria: string,
+    @Query('subcategoria') subcategoria: string,
+    @Res() res: Response
+  ): Promise<void> {
     try {
-      const products = await this.productsService.findAllProducts()
-      if(!products) throw new Error('No se encontraron productos.')
-
-      const lastProfit = await this.productsService.getLatestProfit()
-      if(!lastProfit) throw new Error('No se encontró la ganancia.')
-
+      const products = await this.productsService.findAllProductsFilters(categoria, subcategoria);
+      if (!products) throw new Error('No se encontraron productos.');
+  
+      const lastProfit = await this.productsService.getLatestProfit();
+      if (!lastProfit) throw new Error('No se encontró la ganancia.');
+  
       products.forEach(product => {
         product.precioVenta = product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)
-      })
-
-      res.status(HttpStatus.OK).json(products)
+      });
+  
+      res.status(HttpStatus.OK).json(products);
     } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error);
     }
   }
 

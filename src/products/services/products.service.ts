@@ -83,6 +83,46 @@ export class ProductsService {
     })
   }
 
+  async findAllProductsFilters(categoria: string, subcategoria: string): Promise<Producto[]> {
+    const products = await this.prisma.productos.findMany({
+      where: {
+        id_categoria: Number(categoria) || undefined,
+        id_subcategoria: Number(subcategoria) || undefined,
+      },
+      include: {
+        categorias: true,
+        subcategorias: true,
+      },
+    });
+    return products.map((product) => {
+      return {
+        id: product.id,
+        nombre: product.nombre,
+        descripcion: product.descripcion,
+        urlImagen: product.url_imagen,
+        idCategoria: product.id_categoria,
+        idSubCategoria: product.id_subcategoria,
+        precioLista: Number(product.precio_lista),
+        stock: product.stock,
+        stockMinimo: product.stock_minimo,
+        estado: product.estado,
+        categoria: {
+          id: product.categorias.id,
+          nombre: product.categorias.nombre,
+          descripcion: product.categorias.descripcion,
+          estado: product.categorias.estado,
+        },
+        subcategoria: {
+          id: product.subcategorias.id,
+          nombre: product.subcategorias.nombre,
+          descripcion: product.subcategorias.descripcion,
+          estado: product.subcategorias.estado,
+          idCategoria: product.subcategorias.id_categoria,
+        }
+      }
+    })
+  }
+
   async findProductById(id: string): Promise<Producto> {
     const product = await this.prisma.productos.findUnique({
       where: { id: Number(id) },
@@ -131,47 +171,6 @@ export class ProductsService {
         stock_minimo: data.stockMinimo,
       }
     });
-  }
-
-  async searchProducts(query: string): Promise<Producto[]> {
-    const products = await this.prisma.productos.findMany({
-      where: {
-        nombre: {
-          contains: query,
-        }
-      },
-      include: {
-        categorias: true,
-        subcategorias: true,
-      },
-    });
-    return products.map((product) => {
-      return {
-        id: product.id,
-        nombre: product.nombre,
-        descripcion: product.descripcion,
-        urlImagen: product.url_imagen,
-        idCategoria: product.id_categoria,
-        idSubCategoria: product.id_subcategoria,
-        precioLista: Number(product.precio_lista),
-        stock: product.stock,
-        stockMinimo: product.stock_minimo,
-        estado: product.estado,
-        categoria: {
-          id: product.categorias.id,
-          nombre: product.categorias.nombre,
-          descripcion: product.categorias.descripcion,
-          estado: product.categorias.estado,
-        },
-        subcategoria: {
-          id: product.subcategorias.id,
-          nombre: product.subcategorias.nombre,
-          descripcion: product.subcategorias.descripcion,
-          estado: product.subcategorias.estado,
-          idCategoria: product.subcategorias.id_categoria,
-        }
-      }
-    })
   }
 
   async getProfits(): Promise<Ganancia[]> {
