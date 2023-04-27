@@ -14,6 +14,13 @@ model banners {
   url_imagen  String @db.VarChar
 }
 
+model carrito {
+  id         Int      @id @default(autoincrement())
+  id_usuario Int      @unique @default(0)
+  productos  Json?
+  usuarios   usuarios @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_carrito_usuarios")
+}
+
 model categorias {
   id            Int             @id @default(autoincrement())
   nombre        String          @db.VarChar(60)
@@ -101,7 +108,7 @@ model facturas {
 model ganancias {
   id         Int      @id @default(autoincrement())
   vigencia   DateTime @db.Date
-  porcentaje Decimal  @db.Decimal(5,2) @default(0)
+  porcentaje Decimal  @default(0) @db.Decimal(5, 2)
   id_usuario Int      @default(0)
   usuarios   usuarios @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_ganancias_usuarios")
 }
@@ -183,6 +190,16 @@ model roles {
   usuarios usuarios[]
 }
 
+model subcategorias {
+  id           Int         @id @default(autoincrement())
+  nombre       String      @db.VarChar(60)
+  descripcion  String?     @db.VarChar(200)
+  estado       Boolean     @default(true)
+  id_categoria Int         @default(0)
+  productos    productos[]
+  categorias   categorias  @relation(fields: [id_categoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_categorias_subcategorias")
+}
+
 model tipos_compra {
   id           Int            @id @default(autoincrement())
   nombre       String         @db.VarChar(30)
@@ -218,19 +235,10 @@ model usuarios {
   fecha_nacimiento   DateTime?      @db.Date
   estado             Boolean        @default(true)
   id_rol             Int            @default(2)
+  carrito            carrito?
   facturas           facturas[]
   ganancias          ganancias[]
   notas_pedido       notas_pedido[]
   pedidos            pedidos[]
   roles              roles          @relation(fields: [id_rol], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuarios_roles")
-}
-
-model subcategorias {
-  id           Int         @id @default(autoincrement())
-  nombre       String      @db.VarChar(60)
-  descripcion  String?     @db.VarChar(200)
-  estado       Boolean     @default(true)
-  id_categoria Int         @default(0)
-  productos    productos[]
-  categorias   categorias  @relation(fields: [id_categoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_categorias_subcategorias")
 }

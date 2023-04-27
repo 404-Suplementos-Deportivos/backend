@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/services/prisma.service'
-import { usuarios as UserModel } from '@prisma/client'
+import { 
+  usuarios as UserModel,
+  carrito as CartModel,
+} from '@prisma/client'
+import { CartDto } from '../dto/CartDto';
 
 @Injectable()
 export class UsersService {
@@ -52,5 +56,41 @@ export class UsersService {
     })
     this.prisma.$disconnect();
     return user;
+  }
+
+  async getCart(id: number): Promise<CartModel> {
+    const cart = await this.prisma.carrito.findUnique({
+      where: {
+        id_usuario: id
+      }
+    });
+    return cart
+  }
+
+  async createCart(cartDTO: CartDto): Promise<CartModel> {
+    const cart = await this.prisma.carrito.create({
+      data: {
+        id_usuario: cartDTO.idUsuario,
+        productos: cartDTO.productos
+      }
+    });
+    return cart
+  }
+
+  async updateCart(cartDTO: CartDto): Promise<CartModel> {
+    const cart = await this.prisma.carrito.update({
+      where: {
+        id_usuario: cartDTO.idUsuario
+      },
+      data: {
+        productos: cartDTO.productos.map(producto => {
+          return {
+            id_producto: producto.idProducto,
+            cantidad: producto.cantidad
+          }
+        })
+      }
+    });
+    return cart
   }
 }

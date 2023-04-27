@@ -15,4 +15,5 @@ export interface Producto {
   estado?: boolean;
   categoria?: Categoria;
   subcategoria?: Subcategoria;
+  cantidad?: number;
 }
