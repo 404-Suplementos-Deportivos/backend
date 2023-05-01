@@ -83,12 +83,7 @@ export class UsersService {
         id_usuario: cartDTO.idUsuario
       },
       data: {
-        productos: cartDTO.productos.map(producto => {
-          return {
-            id_producto: producto.idProducto,
-            cantidad: producto.cantidad
-          }
-        })
+        productos: cartDTO.productos
       }
     });
     return cart
