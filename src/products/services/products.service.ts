@@ -228,6 +228,4 @@ export class ProductsService {
       idUsuario: profit.id_usuario,
     }
   }
-
-
 }

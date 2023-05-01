@@ -8,23 +8,110 @@ import {
   Req,
   HttpStatus,
   UseGuards,
+  Post,
 } from '@nestjs/common'
 import { Response, Request } from 'express'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UsersService } from '../services/users.service';
+import { ProductsService } from 'src/products/services/products.service';
 import { UserDTO } from '../dto/UserDto'
+import { CartDto } from '../dto/CartDto';
 import { JwtPayloadModel } from 'src/auth/models/token.model';
+import { Cart } from '../models/Cart';
 import { formatDate } from 'src/utils/helpers';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService, private productsService: ProductsService) {}
+
+  // ! Carrito
+  @Get('/cart')
+  async getCart(@Req() req: Request, @Res() res: Response): Promise<any> {
+    try {
+      const userJwt = req.user as JwtPayloadModel
+      const cart = await this.usersService.getCart(userJwt.id)
+      if(!cart) return res.status(HttpStatus.NOT_FOUND).json({ idUsuario: userJwt.id, productos: [] } as Cart)
+
+      const lastProfit = await this.productsService.getLatestProfit()
+      if(!lastProfit) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró la ganancia.' })
+
+      const productos = JSON.parse(JSON.stringify(cart.productos)).map(async (producto: any) => {
+        const product = await this.productsService.findProductById(producto.id_producto.toString())
+        if(!(product).estado) return null
+        product.precioVenta = product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)
+        return { 
+          ...product, 
+          cantidad: producto.cantidad 
+        }
+      })
+
+      const cartResponse: Cart = {
+        id: cart.id,
+        idUsuario: cart.id_usuario,
+        productos: await Promise.all(productos)
+      }
+
+      res.status(HttpStatus.OK).json(cartResponse)
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message })
+    }
+  }
+
+  @Post('/cart')
+  async addToCart(@Body() cartDTO: CartDto, @Req() req: Request, @Res() res: Response): Promise<any> {
+    try {
+      const userJwt = req.user as JwtPayloadModel
+      const cart = await this.usersService.getCart(userJwt.id)
+
+      const lastProfit = await this.productsService.getLatestProfit()
+      if(!lastProfit) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró la ganancia.' })
+
+      cartDTO.idUsuario = userJwt.id
+      let cartResponse: Cart
+      if(cart) {
+        // Actualizar arreglo de Productos
+        const updatedCart = await this.usersService.updateCart(cartDTO)
+
+        const productos = JSON.parse(JSON.stringify(updatedCart.productos)).map(async (producto: any) => {
+          const product = await this.productsService.findProductById(producto.id_producto.toString())
+          if(!(product).estado) return null
+          product.precioVenta = product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)
+          return { ...product, cantidad: producto.cantidad }
+        })
+
+        cartResponse = {
+          id: cart.id,
+          idUsuario: cart.id_usuario,
+          productos: await Promise.all(productos)
+        }
+      } else {
+        // Crear carrito
+        const cartCreated = await this.usersService.createCart(cartDTO)
+
+        const productos = JSON.parse(JSON.stringify(cartCreated.productos)).map(async (producto: any) => {
+          const product = await this.productsService.findProductById(producto.id_producto.toString())
+          if(!(product).estado) return null
+          product.precioVenta = product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)
+          return { ...product, cantidad: producto.cantidad }
+        })
+
+        cartResponse = {
+          id: cartCreated.id,
+          idUsuario: cartCreated.id_usuario,
+          productos: await Promise.all(productos)
+        }
+      }
+      res.status(HttpStatus.OK).json(cartResponse)
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message })
+    }
+  }
 
   @Get()
   @Roles('Administrador')
-  async getUsers(@Res() res: Response) {
+  async getUsers(@Res() res: Response): Promise<any> {
     try {
       const users = await this.usersService.getUsers();
       if(!users) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No users found' })
@@ -38,7 +125,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  async getUser(@Param('id') id: string, @Req() req: Request, @Res() res: Response, ) {
+  async getUser(@Param('id') id: string, @Req() req: Request, @Res() res: Response): Promise<any> {
     try {
       const user = await this.usersService.getUserById(id);
       if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
@@ -66,7 +153,7 @@ export class UsersController {
   }
 
   @Put(':id')
-  async updateUser(@Param('id') id: string, @Body() data: UserDTO, @Req() req: Request, @Res() res: Response) {
+  async updateUser(@Param('id') id: string, @Body() data: UserDTO, @Req() req: Request, @Res() res: Response): Promise<any> {
     try {
       // Convertir Fecha de String a Fecha para la BD
       if(data.fechaNacimiento) data.fechaNacimiento = new Date(data.fechaNacimiento).toISOString()

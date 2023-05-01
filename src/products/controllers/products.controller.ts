@@ -92,11 +92,11 @@ export class ProductsController {
   @Public()
   async findProductById(@Param('id') id: string, @Res() res: Response): Promise<any> {
     try {
-      const product = await this.productsService.findProductById(id)
-      if(!product) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró el producto.' })
-
       const lastProfit = await this.productsService.getLatestProfit()
       if(!lastProfit) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró la ganancia.' })
+
+      const product = await this.productsService.findProductById(id)
+      if(!product) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró el producto.' })
 
       product.precioVenta = product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)
 
@@ -114,11 +114,11 @@ export class ProductsController {
     @Res() res: Response
   ): Promise<any> {
     try {
-      const products = await this.productsService.findAllProductsFilters(categoria, subcategoria);
-      if (!products) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Error al obtener los productos.' });
-  
       const lastProfit = await this.productsService.getLatestProfit();
       if (!lastProfit) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Error al obtener la ganancia.' });
+
+      const products = await this.productsService.findAllProductsFilters(categoria, subcategoria);
+      if (!products) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Error al obtener los productos.' });
   
       products.forEach(product => {
         product.precioVenta = product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)
