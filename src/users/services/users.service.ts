@@ -3,17 +3,58 @@ import { PrismaService } from 'src/services/prisma.service'
 import { 
   usuarios as UserModel,
   carrito as CartModel,
+  roles as RolModel
 } from '@prisma/client'
+import { User } from '../models/User';
+import { Rol } from '../models/Rol';
 import { CartDto } from '../dto/CartDto';
+import { formatDate } from 'src/utils/helpers';
+
+// Extender tipo de datos de UserModel con RolModel
+type UserModelComplete = UserModel & {
+  roles: RolModel
+}
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getUsers(): Promise<UserModel[]> {
-    const users = await this.prisma.usuarios.findMany()
+  async getRol(id: number): Promise<Rol> {
+    const rol = await this.prisma.roles.findUnique({
+      where: {
+        id
+      }
+    });
+    return rol
+  }
+
+  async getUsers(): Promise<User[]> {
+    const users = await this.prisma.usuarios.findMany({
+      include: {
+        roles: true
+      }
+    })
     this.prisma.$disconnect();
-    return users;
+    return users.map((user: UserModelComplete) => {
+      return {
+        id: user.id,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        email: user.email,
+        cuentaConfirmada: user.cuenta_confirmada,
+        direccion: user.direccion,
+        codigoPostal: user.codigo_postal,
+        telefono: user.telefono,
+        fechaNacimiento: formatDate(user.fecha_nacimiento),
+        estado: user.estado,
+        idRol: user.id_rol,
+        rol: {
+          id: user.roles.id,
+          nombre: user.roles.nombre,
+          estado: user.roles.estado,
+        }
+      } as User
+    })
   }
 
   async getUserById(id: string): Promise<UserModel> {

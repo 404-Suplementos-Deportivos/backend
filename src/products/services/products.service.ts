@@ -20,6 +20,7 @@ export class ProductsService {
 
   async findAllCategories(): Promise<Categoria[]> {
     const categorias = await this.prisma.categorias.findMany();
+    this.prisma.$disconnect();
     return categorias.map((categoria) => {
       return {
         id: categoria.id,
@@ -36,6 +37,7 @@ export class ProductsService {
         id_categoria: Number(id),
       }
     });
+    this.prisma.$disconnect();
     return subcategorias.map((subcategoria) => {
       return {
         id: subcategoria.id,
@@ -54,6 +56,7 @@ export class ProductsService {
         subcategorias: true,
       },
     });
+    this.prisma.$disconnect();
     return products.map((product) => {
       return {
         id: product.id,
@@ -94,6 +97,7 @@ export class ProductsService {
         subcategorias: true,
       },
     });
+    this.prisma.$disconnect();
     return products.map((product) => {
       return {
         id: product.id,
@@ -131,6 +135,7 @@ export class ProductsService {
         subcategorias: true,
       },
     });
+    this.prisma.$disconnect();
     return {
       id: product.id,
       nombre: product.nombre,
@@ -159,7 +164,7 @@ export class ProductsService {
   }
 
   async createProduct(data: CreateProductDto): Promise<ProductoAPI> {
-    return await this.prisma.productos.create({
+    const response = await this.prisma.productos.create({
       data: {
         nombre: data.nombre,
         descripcion: data.descripcion,
@@ -171,10 +176,13 @@ export class ProductsService {
         stock_minimo: data.stockMinimo,
       }
     });
+    this.prisma.$disconnect();
+    return response
   }
 
   async getProfits(): Promise<Ganancia[]> {
     const profits = await this.prisma.ganancias.findMany();
+    this.prisma.$disconnect();
     return profits.map((profit) => {
       return {
         id: profit.id,
@@ -191,6 +199,7 @@ export class ProductsService {
         vigencia: 'desc',
       }
     });
+    this.prisma.$disconnect();
     return {
       id: profit.id,
       vigencia: formatDate(profit.vigencia),
@@ -207,6 +216,7 @@ export class ProductsService {
         id_usuario: data.idUsuario
       }
     })
+    this.prisma.$disconnect();
     return {
       id: profit.id,
       vigencia: formatDate(profit.vigencia),
@@ -221,6 +231,7 @@ export class ProductsService {
         id: Number(id)
       }
     })
+    this.prisma.$disconnect();
     return {
       id: profit.id,
       vigencia: formatDate(profit.vigencia),
