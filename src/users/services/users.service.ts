@@ -8,7 +8,9 @@ import {
 import { User } from '../models/User';
 import { Rol } from '../models/Rol';
 import { CartDto } from '../dto/CartDto';
+import { UserDTO } from '../dto/UserDto';
 import { formatDate } from 'src/utils/helpers';
+import { encryptPassword } from 'src/utils/auth';
 
 // Extender tipo de datos de UserModel con RolModel
 type UserModelComplete = UserModel & {
@@ -25,11 +27,21 @@ export class UsersService {
         id
       }
     });
+    this.prisma.$disconnect();
     return rol
+  }
+
+  async getRoles(): Promise<Rol[]> {
+    const roles = await this.prisma.roles.findMany();
+    this.prisma.$disconnect();
+    return roles
   }
 
   async getUsers(): Promise<User[]> {
     const users = await this.prisma.usuarios.findMany({
+      orderBy: {
+        id: 'asc'
+      },
       include: {
         roles: true
       }
@@ -44,8 +56,8 @@ export class UsersService {
         cuentaConfirmada: user.cuenta_confirmada,
         direccion: user.direccion,
         codigoPostal: user.codigo_postal,
-        telefono: user.telefono,
-        fechaNacimiento: formatDate(user.fecha_nacimiento),
+        telefono: user.telefono ? user.telefono : null,
+        fechaNacimiento: user.fecha_nacimiento ? formatDate(user.fecha_nacimiento) : null,
         estado: user.estado,
         idRol: user.id_rol,
         rol: {
@@ -80,7 +92,27 @@ export class UsersService {
     return user?.id || 0;
   }
 
-  async updateUser(id: string, data: any): Promise<UserModel> {
+  async createUser(data: UserDTO): Promise<UserModel> {
+    const user = await this.prisma.usuarios.create({ 
+      data: {
+        nombre: data.nombre,
+        apellido: data.apellido,
+        email: data.email,
+        password: await encryptPassword(data.password),
+        token_confirmacion: null,
+        cuenta_confirmada: false,
+        direccion: data.direccion,
+        codigo_postal: data.codigoPostal,
+        telefono: data.telefono,
+        fecha_nacimiento: data.fechaNacimiento,
+        id_rol: data.idRol,
+      }
+    })
+    this.prisma.$disconnect();
+    return user;
+  }
+
+  async updateUser(id: string, data: UserDTO): Promise<UserModel> {
     const user = await this.prisma.usuarios.update({
       where: { 
         id: parseInt(id)
@@ -93,6 +125,33 @@ export class UsersService {
         codigo_postal: data.codigoPostal,
         telefono: data.telefono,
         fecha_nacimiento: data.fechaNacimiento,
+        id_rol: data.idRol,
+      }
+    })
+    this.prisma.$disconnect();
+    return user;
+  }
+
+  async deleteUser(id: string): Promise<UserModel> {
+    const user = await this.prisma.usuarios.update({
+      where: {
+        id: parseInt(id)
+      },
+      data: {
+        estado: false
+      }
+    })
+    this.prisma.$disconnect();
+    return user;
+  }
+
+  async confirmAccount(id: string): Promise<UserModel> {
+    const user = await this.prisma.usuarios.update({
+      where: {
+        id: parseInt(id)
+      },
+      data: {
+        cuenta_confirmada: true
       }
     })
     this.prisma.$disconnect();
@@ -115,6 +174,7 @@ export class UsersService {
         productos: cartDTO.productos
       }
     });
+    this.prisma.$disconnect();
     return cart
   }
 
@@ -127,6 +187,7 @@ export class UsersService {
         productos: cartDTO.productos
       }
     });
+    this.prisma.$disconnect();
     return cart
   }
 }
