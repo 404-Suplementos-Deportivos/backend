@@ -9,6 +9,7 @@ import {
 import { CreateProductDto } from '../dto/create-product.dto';
 import { CreateProfitDto } from '../dto/createProfitDto';
 import { CreateCategoryDto } from '../dto/createCategoryDto';
+import { CreateSubcategoryDto } from '../dto/createSubcategoryDto';
 import { Producto } from '../models/Producto';
 import { Categoria } from '../models/Categoria';
 import { Subcategoria } from '../models/Subcategoria';
@@ -108,6 +109,61 @@ export class ProductsService {
         idCategoria: subcategoria.id_categoria,
       };
     })
+  }
+
+  async findSubCategoryById(id: string): Promise<Subcategoria> {
+    const subcategoria = await this.prisma.subcategorias.findUnique({
+      where: {
+        id: Number(id),
+      },
+    });
+    this.prisma.$disconnect();
+    return {
+      id: subcategoria.id,
+      nombre: subcategoria.nombre,
+      descripcion: subcategoria.descripcion,
+      estado: subcategoria.estado,
+      idCategoria: subcategoria.id_categoria,
+    };
+  }
+  
+  async findAllProductsBySubCategory(id: string): Promise<boolean> {
+    const products = await this.prisma.productos.findMany({
+      where: {
+        id_subcategoria: Number(id),
+      }
+    });
+    this.prisma.$disconnect();
+    return products.length > 0;
+  }
+
+  async createSubCategory(subcategoria: CreateSubcategoryDto): Promise<SubCategoriaAPI> {
+    const newSubCategory = await this.prisma.subcategorias.create({
+      data: {
+        nombre: subcategoria.nombre,
+        descripcion: subcategoria.descripcion,
+        id_categoria: subcategoria.idCategoria,
+        estado: true
+      }
+    });
+    this.prisma.$disconnect();
+    return newSubCategory
+  }
+
+  async updateSubCategory(id: string, subcategoria: CreateSubcategoryDto): Promise<SubCategoriaAPI> {
+    const updatedSubCategory = await this.prisma.subcategorias.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        nombre: subcategoria.nombre,
+        descripcion: subcategoria.descripcion,
+        id_categoria: subcategoria.idCategoria,
+        estado: true,
+      }
+    });
+    this.prisma.$disconnect();
+    return updatedSubCategory;
   }
 
   async deleteSubCategory(id: string): Promise<SubCategoriaAPI> {
@@ -258,6 +314,40 @@ export class ProductsService {
         precio_lista: data.precioLista,
         stock: data.stock,
         stock_minimo: data.stockMinimo,
+      }
+    });
+    this.prisma.$disconnect();
+    return response
+  }
+
+  async updateProduct(id: string, data: CreateProductDto): Promise<ProductoAPI> {
+    const response = await this.prisma.productos.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        nombre: data.nombre,
+        descripcion: data.descripcion,
+        url_imagen: data.urlImagen,
+        id_categoria: data.idCategoria,
+        id_subcategoria: data.idSubCategoria,
+        precio_lista: data.precioLista,
+        stock: data.stock,
+        stock_minimo: data.stockMinimo,
+        estado: true,
+      }
+    });
+    this.prisma.$disconnect();
+    return response
+  }
+
+  async deleteProduct(id: string): Promise<ProductoAPI> {
+    const response = await this.prisma.productos.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        estado: false,
       }
     });
     this.prisma.$disconnect();

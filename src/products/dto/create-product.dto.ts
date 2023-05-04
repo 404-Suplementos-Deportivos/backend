@@ -7,4 +7,5 @@ export interface CreateProductDto {
   precioLista: number;
   stock: number;
   stockMinimo: number;
+  estado?: boolean;
 }
