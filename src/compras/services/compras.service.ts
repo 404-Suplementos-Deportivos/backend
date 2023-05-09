@@ -7,7 +7,14 @@ import {
 } from '@prisma/client';
 import { Proveedor } from '../models/Proveedor';
 import { TipoIVA } from '../models/TipoIVA';
+import { NotaPedido } from '../models/NotaPedido';
+import { Producto } from 'src/products/models/Producto';
+import { EstadoNP } from '../models/EstadoNP';
 import { CreateProveedorDto } from '../dto/createProveedorDto';
+import { CreateNotaPedidoDto } from '../dto/createNotaPedidoDto';
+import { UpdateNotaPedidoDto } from '../dto/updateNotaPedidoDto';
+import { ChangeEstadoNotaPedidoDto } from '../dto/changeEstadoNotaPedidoDto';
+import { formatDate } from 'src/utils/helpers';
 
 @Injectable()
 export class ComprasService {
@@ -198,6 +205,412 @@ export class ComprasService {
         nombre: tipoIVA.nombre,
         descripcion: tipoIVA.descripcion,
         estado: tipoIVA.estado,
+      }
+    })
+  }
+
+  async getEstadosNP(): Promise<EstadoNP[]> {
+    const estadosNP = await this.prisma.estados_np.findMany();
+    this.prisma.$disconnect();
+    return estadosNP.map(estadoNP => {
+      return {
+        id: estadoNP.id,
+        nombre: estadoNP.nombre,
+        estado: estadoNP.estado,
+      }
+    })
+  }
+
+
+  async getNotasPedido(): Promise<NotaPedido[]> {
+    const notasPedido = await this.prisma.notas_pedido.findMany({
+      include: {
+        usuarios: {
+          select: {
+            nombre: true,
+            apellido: true,
+          }
+        },
+        proveedores: {
+          select: {
+            nombre: true
+          }
+        },
+        estados_np: {
+          select: {
+            nombre: true
+          }
+        },
+        tipos_compra: {
+          select: {
+            nombre: true
+          }
+        },
+        detalles_np: {
+          select:{
+            cantidad_pedida: true,
+            cantidad_recibida: true,
+            precio: true,
+            descuento: true,
+            estado: true,
+            productos: {
+              select: {
+                nombre: true,
+              }
+            }
+          },
+        }
+      }
+    });
+    this.prisma.$disconnect();
+    return notasPedido.map((notaPedido) => {
+      return {
+        id: notaPedido.id,
+        fecha: formatDate(notaPedido.fecha),
+        version: notaPedido.version,
+        fechaVencimiento: formatDate(notaPedido.fecha_vencimiento),
+        usuario: notaPedido.usuarios.nombre + ' ' + notaPedido.usuarios.apellido,
+        proveedor: notaPedido.proveedores.nombre,
+        estadoNP: notaPedido.estados_np.nombre,
+        tipoCompra: notaPedido.tipos_compra.nombre,
+        detalleNotaPedido: notaPedido.detalles_np.map((detalleNotaPedido) => {
+          return {
+            cantidadPedida: detalleNotaPedido.cantidad_pedida,
+            cantidadRecibida: detalleNotaPedido.cantidad_recibida,
+            precio: Number(detalleNotaPedido.precio),
+            descuento: detalleNotaPedido.descuento,
+            estado: detalleNotaPedido.estado,
+            producto: detalleNotaPedido.productos.nombre,
+          }
+        })
+      }
+    })
+  }
+
+  async getNotaPedido(id: number): Promise<NotaPedido> {
+    const notaPedido = await this.prisma.notas_pedido.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        usuarios: {
+          select: {
+            nombre: true,
+            apellido: true,
+          }
+        },
+        proveedores: {
+          select: {
+            nombre: true
+          }
+        },
+        estados_np: {
+          select: {
+            nombre: true
+          }
+        },
+        tipos_compra: {
+          select: {
+            nombre: true
+          }
+        },
+        detalles_np: {
+          select:{
+            cantidad_pedida: true,
+            cantidad_recibida: true,
+            precio: true,
+            descuento: true,
+            estado: true,
+            productos: {
+              select: {
+                nombre: true,
+              }
+            }
+          },
+        }
+      }
+    });
+    this.prisma.$disconnect();
+    return {
+      id: notaPedido.id,
+      fecha: formatDate(notaPedido.fecha),
+      version: notaPedido.version,
+      fechaVencimiento: formatDate(notaPedido.fecha_vencimiento),
+      usuario: notaPedido.usuarios.nombre + ' ' + notaPedido.usuarios.apellido,
+      proveedor: notaPedido.proveedores.nombre,
+      estadoNP: notaPedido.estados_np.nombre,
+      tipoCompra: notaPedido.tipos_compra.nombre,
+      detalleNotaPedido: notaPedido.detalles_np.map((detalleNotaPedido) => {
+        return {
+          cantidadPedida: detalleNotaPedido.cantidad_pedida,
+          cantidadRecibida: detalleNotaPedido.cantidad_recibida,
+          precio: Number(detalleNotaPedido.precio),
+          descuento: detalleNotaPedido.descuento,
+          estado: detalleNotaPedido.estado,
+          producto: detalleNotaPedido.productos.nombre,
+        }
+      })
+    }
+  }
+
+  async createNotaPedido(notaPedido: CreateNotaPedidoDto): Promise<NotaPedido> {
+    const notaPedidoCreada = await this.prisma.notas_pedido.create({
+      data: {
+        fecha: new Date().toISOString(),
+        version: notaPedido.version,
+        fecha_vencimiento: new Date(notaPedido.fechaVencimiento).toISOString(),
+        id_usuario: notaPedido.usuarioId,
+        id_proveedor: notaPedido.proveedorId,
+        id_estado_np: 1,
+        id_tipo_compra: notaPedido.tipoCompraId,
+        detalles_np: {
+          create: notaPedido.detalleNotaPedido.map((detalleNotaPedido) => {
+            return {
+              cantidad_pedida: detalleNotaPedido.cantidadPedida,
+              cantidad_recibida: detalleNotaPedido.cantidadRecibida,
+              precio: detalleNotaPedido.precio,
+              descuento: detalleNotaPedido.descuento,
+              id_producto: detalleNotaPedido.productoId,
+              estado: true
+            }
+          })
+        }
+      },
+      include: {
+        usuarios: {
+          select: {
+            nombre: true,
+            apellido: true,
+          }
+        },
+        proveedores: {
+          select: {
+            nombre: true
+          }
+        },
+        estados_np: {
+          select: {
+            nombre: true
+          }
+        },
+        tipos_compra: {
+          select: {
+            nombre: true
+          }
+        },
+        detalles_np: {
+          select:{
+            cantidad_pedida: true,
+            cantidad_recibida: true,
+            precio: true,
+            descuento: true,
+            estado: true,
+            productos: {
+              select: {
+                nombre: true,
+              }
+            }
+          },
+        }
+      }
+    });
+    this.prisma.$disconnect();
+    return {
+      id: notaPedidoCreada.id,
+      fecha: formatDate(notaPedidoCreada.fecha),
+      version: notaPedidoCreada.version,
+      fechaVencimiento: formatDate(notaPedidoCreada.fecha_vencimiento),
+      usuario: notaPedidoCreada.usuarios.nombre + ' ' + notaPedidoCreada.usuarios.apellido,
+      proveedor: notaPedidoCreada.proveedores.nombre,
+      estadoNP: notaPedidoCreada.estados_np.nombre,
+      tipoCompra: notaPedidoCreada.tipos_compra.nombre,
+      detalleNotaPedido: notaPedidoCreada.detalles_np.map((detalleNotaPedido) => {
+        return {
+          cantidadPedida: detalleNotaPedido.cantidad_pedida,
+          cantidadRecibida: detalleNotaPedido.cantidad_recibida,
+          precio: Number(detalleNotaPedido.precio),
+          descuento: detalleNotaPedido.descuento,
+          estado: detalleNotaPedido.estado,
+          producto: detalleNotaPedido.productos.nombre,
+        }
+      })
+    }
+  }
+
+  async updateNotaPedido(id: number, notaPedido: UpdateNotaPedidoDto): Promise<NotaPedido> {
+    const notaPedidoActualizada = await this.prisma.notas_pedido.update({
+      where: {
+        id: id
+      },
+      data: {
+        fecha_vencimiento: new Date(notaPedido.fechaVencimiento).toISOString(),
+        id_estado_np: notaPedido.estadoNPId,
+        id_tipo_compra: notaPedido.tipoCompraId,
+        detalles_np: {
+          deleteMany: {},
+          create: notaPedido.detalleNotaPedido.map((detalleNotaPedido) => {
+            return {
+              cantidad_pedida: detalleNotaPedido.cantidadPedida,
+              cantidad_recibida: detalleNotaPedido.cantidadRecibida,
+              precio: detalleNotaPedido.precio,
+              descuento: detalleNotaPedido.descuento,
+              id_producto: detalleNotaPedido.productoId,
+              estado: true
+            }
+          })
+        }
+      },
+      include: {
+        usuarios: {
+          select: {
+            nombre: true,
+            apellido: true,
+          }
+        },
+        proveedores: {
+          select: {
+            nombre: true
+          }
+        },
+        estados_np: {
+          select: {
+            nombre: true
+          }
+        },
+        tipos_compra: {
+          select: {
+            nombre: true
+          }
+        },
+        detalles_np: {
+          select:{
+            cantidad_pedida: true,
+            cantidad_recibida: true,
+            precio: true,
+            descuento: true,
+            estado: true,
+            productos: {
+              select: {
+                nombre: true,
+              }
+            }
+          },
+        }
+      }
+    });
+    this.prisma.$disconnect();
+    return {
+      id: notaPedidoActualizada.id,
+      fecha: formatDate(notaPedidoActualizada.fecha),
+      version: notaPedidoActualizada.version,
+      fechaVencimiento: formatDate(notaPedidoActualizada.fecha_vencimiento),
+      usuario: notaPedidoActualizada.usuarios.nombre + ' ' + notaPedidoActualizada.usuarios.apellido,
+      proveedor: notaPedidoActualizada.proveedores.nombre,
+      estadoNP: notaPedidoActualizada.estados_np.nombre,
+      tipoCompra: notaPedidoActualizada.tipos_compra.nombre,
+      detalleNotaPedido: notaPedidoActualizada.detalles_np.map((detalleNotaPedido) => {
+        return {
+          cantidadPedida: detalleNotaPedido.cantidad_pedida,
+          cantidadRecibida: detalleNotaPedido.cantidad_recibida,
+          precio: Number(detalleNotaPedido.precio),
+          descuento: detalleNotaPedido.descuento,
+          estado: detalleNotaPedido.estado,
+          producto: detalleNotaPedido.productos.nombre,
+        }
+      })
+    }
+  }
+
+  async changeEstadoNotaPedido(id: number, notaPedido: ChangeEstadoNotaPedidoDto): Promise<NotaPedido> {
+    const notaPedidoActualizada = await this.prisma.notas_pedido.update({
+      where: {
+        id: id
+      },
+      data: {
+        id_estado_np: notaPedido.estadoNPId,
+      },
+      include: {
+        usuarios: {
+          select: {
+            nombre: true,
+            apellido: true,
+          }
+        },
+        proveedores: {
+          select: {
+            nombre: true
+          }
+        },
+        estados_np: {
+          select: {
+            nombre: true
+          }
+        },
+        tipos_compra: {
+          select: {
+            nombre: true
+          }
+        },
+        detalles_np: {
+          select:{
+            cantidad_pedida: true,
+            cantidad_recibida: true,
+            precio: true,
+            descuento: true,
+            estado: true,
+            productos: {
+              select: {
+                nombre: true,
+              }
+            }
+          },
+        }
+      }
+    });
+    this.prisma.$disconnect();
+    return {
+      id: notaPedidoActualizada.id,
+      fecha: formatDate(notaPedidoActualizada.fecha),
+      version: notaPedidoActualizada.version,
+      fechaVencimiento: formatDate(notaPedidoActualizada.fecha_vencimiento),
+      usuario: notaPedidoActualizada.usuarios.nombre + ' ' + notaPedidoActualizada.usuarios.apellido,
+      proveedor: notaPedidoActualizada.proveedores.nombre,
+      estadoNP: notaPedidoActualizada.estados_np.nombre,
+      tipoCompra: notaPedidoActualizada.tipos_compra.nombre,
+      detalleNotaPedido: notaPedidoActualizada.detalles_np.map((detalleNotaPedido) => {
+        return {
+          cantidadPedida: detalleNotaPedido.cantidad_pedida,
+          cantidadRecibida: detalleNotaPedido.cantidad_recibida,
+          precio: Number(detalleNotaPedido.precio),
+          descuento: detalleNotaPedido.descuento,
+          estado: detalleNotaPedido.estado,
+          producto: detalleNotaPedido.productos.nombre,
+        }
+      })
+    }
+  }
+
+  async getProductosProveedor(id: number): Promise<any> {
+    const productos = await this.prisma.productos_proveedores.findMany({
+      where: {
+        id_proveedor: id
+      },
+      select: {
+        precio: true,
+        productos: {
+          select: {
+            id: true,
+            nombre: true,
+          },
+        },
+      },
+    });
+    this.prisma.$disconnect();
+    return productos.map((producto) => {
+      return {
+        id: producto.productos.id,
+        nombre: producto.productos.nombre,
+        precio: Number(producto.precio),
       }
     })
   }

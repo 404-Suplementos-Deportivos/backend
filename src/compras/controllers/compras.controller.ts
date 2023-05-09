@@ -17,8 +17,12 @@ import { Response, Request } from 'express'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { JwtPayloadModel } from 'src/auth/models/token.model';
 import { ComprasService } from '../services/compras.service';
 import { CreateProveedorDto } from '../dto/createProveedorDto';
+import { CreateNotaPedidoDto } from '../dto/createNotaPedidoDto';
+import { UpdateNotaPedidoDto } from '../dto/updateNotaPedidoDto';
+import { ChangeEstadoNotaPedidoDto } from '../dto/changeEstadoNotaPedidoDto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('compras')
@@ -73,6 +77,37 @@ export class ComprasController {
     }
   }
 
+  // ! Notas de Pedido - Actualizar Estado de Nota de Pedido
+  @Put('/notas-pedido/:id')
+  @Roles('Administrador')
+  async changeEstadoNotaPedido(@Res() res: Response, @Req() req: Request, @Param('id') id: string, @Body() changeEstadoNotaPedidoDto: ChangeEstadoNotaPedidoDto) {
+    try {
+      const notaPedido = await this.comprasService.getNotaPedido(Number(id));
+      if(!notaPedido) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró la nota de pedido' });
+
+      const notaPedidoActualizada = await this.comprasService.changeEstadoNotaPedido(Number(id), changeEstadoNotaPedidoDto);
+      if(!notaPedidoActualizada) return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al actualizar estado de nota de pedido' });
+
+      res.status(HttpStatus.OK).json({ message: 'Estado de nota de pedido actualizado correctamente' });
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al actualizar estado de nota de pedido' });
+    }
+  }
+
+  // ! Productos x Proveedor - Obtener todos los Productos x Proveedor
+  @Get('/productos-proveedor/:id')
+  @Roles('Administrador')
+  async getProductosXProveedor(@Res() res: Response, @Req() req: Request, @Param('id') id: string) {
+    try {
+      const productosXProveedor = await this.comprasService.getProductosProveedor(Number(id));
+      if(!productosXProveedor) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontraron productos x proveedor' });
+
+      res.status(HttpStatus.OK).json(productosXProveedor);
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener productos x proveedor' });
+    }
+  }
+
   // ! Proveedores - Obtener todos los Proveedores
   @Get('/proveedores')
   @Roles('Administrador')
@@ -115,6 +150,88 @@ export class ComprasController {
       res.status(HttpStatus.OK).json(tiposIVA);
     } catch (error) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener tipos de IVA' });
+    }
+  }
+
+  // ! Estados de Notas Pedido - Obtener todos los Estados de Notas de Pedido
+  @Get('/estados-np')
+  @Roles('Administrador')
+  async getEstadosNP(@Res() res: Response, @Req() req: Request) {
+    try {
+      const estadosNP = await this.comprasService.getEstadosNP();
+      if(!estadosNP) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontraron estados de notas de pedido' });
+
+      res.status(HttpStatus.OK).json(estadosNP);
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener estados de notas de pedido' });
+    }
+  }
+
+  // ! Notas de Pedido - Obtener Nota de Pedido por ID
+  @Get(':id')
+  @Roles('Administrador')
+  async getNotaPedido(@Res() res: Response, @Req() req: Request, @Param('id') id: string) {
+    try {
+      const notaPedido = await this.comprasService.getNotaPedido(Number(id));
+      if(!notaPedido) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró la nota de pedido' });
+
+      res.status(HttpStatus.OK).json(notaPedido);
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener nota de pedido' });
+    }
+  }
+
+  // ! Notas de Pedido - Actualizar Nota de Pedido
+  @Put(':id')
+  @Roles('Administrador')
+  async updateNotaPedido(@Res() res: Response, @Req() req: Request, @Param('id') id: string, @Body() updateNotaPedidoDto: UpdateNotaPedidoDto) {
+    try {
+      const notaPedido = await this.comprasService.getNotaPedido(Number(id));
+      if(!notaPedido) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró la nota de pedido' });
+
+      if(notaPedido.estadoNP !== 'PEND_ACEPTACION') return res.status(HttpStatus.BAD_REQUEST).json({ message: 'No se puede modificar una nota de pedido que no esté en estado PEND_ACEPTACION' });
+      updateNotaPedidoDto.version = notaPedido.version + 1;
+
+      const notaPedidoActualizada = await this.comprasService.updateNotaPedido(Number(id), updateNotaPedidoDto);
+      if(!notaPedidoActualizada) return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al actualizar nota de pedido' });
+
+      res.status(HttpStatus.OK).json({ message: 'Nota de pedido actualizada correctamente' });
+    } catch (error) {
+      console.log( error )
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al actualizar nota de pedido' });
+    }
+  }
+  
+  // ! Notas de Pedido - Obtener todas las Notas de Pedido
+  @Get()
+  @Roles('Administrador')
+  async getNotasPedido(@Res() res: Response, @Req() req: Request) {
+    try {
+      const notasPedido = await this.comprasService.getNotasPedido();
+      if(!notasPedido) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontraron notas de pedido' });
+
+      res.status(HttpStatus.OK).json(notasPedido);
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener notas de pedido' });
+    }
+  }
+
+  // ! Notas de Pedido - Crear Nota de Pedido
+  @Post()
+  @Roles('Administrador')
+  async createNotaPedido(@Res() res: Response, @Req() req: Request, @Body() createNotaPedidoDto: CreateNotaPedidoDto) {
+    try {
+      const userJwt = req.user as JwtPayloadModel
+
+      createNotaPedidoDto.usuarioId = userJwt.id;
+      createNotaPedidoDto.version = 1;
+
+      const notaPedido = await this.comprasService.createNotaPedido(createNotaPedidoDto);
+      if(!notaPedido) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'No se pudo crear la nota de pedido' });
+
+      res.status(HttpStatus.CREATED).json({message: 'Nota de pedido creada correctamente'});
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al crear nota de pedido' });
     }
   }
 }
