@@ -190,7 +190,7 @@ export class ComprasController {
       if(!notaPedido) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró la nota de pedido' });
 
       if(notaPedido.estadoNP !== 'PEND_ACEPTACION') return res.status(HttpStatus.BAD_REQUEST).json({ message: 'No se puede modificar una nota de pedido que no esté en estado PEND_ACEPTACION' });
-      updateNotaPedidoDto.version = notaPedido.version + 1;
+      updateNotaPedidoDto.version = Number(notaPedido.version) + 1;
 
       const notaPedidoActualizada = await this.comprasService.updateNotaPedido(Number(id), updateNotaPedidoDto);
       if(!notaPedidoActualizada) return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al actualizar nota de pedido' });

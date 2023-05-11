@@ -233,16 +233,19 @@ export class ComprasService {
         },
         proveedores: {
           select: {
+            id: true,
             nombre: true
           }
         },
         estados_np: {
           select: {
+            id: true,
             nombre: true
           }
         },
         tipos_compra: {
           select: {
+            id: true,
             nombre: true
           }
         },
@@ -255,6 +258,7 @@ export class ComprasService {
             estado: true,
             productos: {
               select: {
+                id: true,
                 nombre: true,
               }
             }
@@ -271,8 +275,11 @@ export class ComprasService {
         fechaVencimiento: formatDate(notaPedido.fecha_vencimiento),
         usuario: notaPedido.usuarios.nombre + ' ' + notaPedido.usuarios.apellido,
         proveedor: notaPedido.proveedores.nombre,
+        proveedorId: notaPedido.proveedores.id,
         estadoNP: notaPedido.estados_np.nombre,
+        estadoNPId: notaPedido.estados_np.id,
         tipoCompra: notaPedido.tipos_compra.nombre,
+        tipoCompraId: notaPedido.tipos_compra.id,
         detalleNotaPedido: notaPedido.detalles_np.map((detalleNotaPedido) => {
           return {
             cantidadPedida: detalleNotaPedido.cantidad_pedida,
@@ -281,6 +288,7 @@ export class ComprasService {
             descuento: detalleNotaPedido.descuento,
             estado: detalleNotaPedido.estado,
             producto: detalleNotaPedido.productos.nombre,
+            productoId: detalleNotaPedido.productos.id,
           }
         })
       }
@@ -301,16 +309,19 @@ export class ComprasService {
         },
         proveedores: {
           select: {
+            id: true,
             nombre: true
           }
         },
         estados_np: {
           select: {
+            id: true,
             nombre: true
           }
         },
         tipos_compra: {
           select: {
+            id: true,
             nombre: true
           }
         },
@@ -323,6 +334,7 @@ export class ComprasService {
             estado: true,
             productos: {
               select: {
+                id: true,
                 nombre: true,
               }
             }
@@ -338,8 +350,11 @@ export class ComprasService {
       fechaVencimiento: formatDate(notaPedido.fecha_vencimiento),
       usuario: notaPedido.usuarios.nombre + ' ' + notaPedido.usuarios.apellido,
       proveedor: notaPedido.proveedores.nombre,
+      proveedorId: notaPedido.proveedores.id,
       estadoNP: notaPedido.estados_np.nombre,
+      estadoNPId: notaPedido.estados_np.id,
       tipoCompra: notaPedido.tipos_compra.nombre,
+      tipoCompraId: notaPedido.tipos_compra.id,
       detalleNotaPedido: notaPedido.detalles_np.map((detalleNotaPedido) => {
         return {
           cantidadPedida: detalleNotaPedido.cantidad_pedida,
@@ -348,6 +363,7 @@ export class ComprasService {
           descuento: detalleNotaPedido.descuento,
           estado: detalleNotaPedido.estado,
           producto: detalleNotaPedido.productos.nombre,
+          productoId: detalleNotaPedido.productos.id,
         }
       })
     }
@@ -446,6 +462,7 @@ export class ComprasService {
         fecha_vencimiento: new Date(notaPedido.fechaVencimiento).toISOString(),
         id_estado_np: notaPedido.estadoNPId,
         id_tipo_compra: notaPedido.tipoCompraId,
+        version: notaPedido.version,
         detalles_np: {
           deleteMany: {},
           create: notaPedido.detalleNotaPedido.map((detalleNotaPedido) => {

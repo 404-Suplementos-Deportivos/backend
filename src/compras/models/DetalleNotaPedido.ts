@@ -5,4 +5,5 @@ export interface DetalleNotaPedido {
   descuento: number;
   estado: boolean
   producto: string;
+  idProducto?: number;
 }
