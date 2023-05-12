@@ -85,6 +85,14 @@ export class ComprasController {
       const notaPedido = await this.comprasService.getNotaPedido(Number(id));
       if(!notaPedido) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró la nota de pedido' });
 
+      if(notaPedido.estadoNPId === 3 || notaPedido.estadoNPId === 4) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'No se puede actualizar el estado de una nota de pedido que ya fue anulada o recibida' });
+
+      if(changeEstadoNotaPedidoDto.estadoNPId === 3) {
+        notaPedido.detalleNotaPedido.forEach(async (detalle: any) => {
+          const producto = await this.comprasService.addItemToInventory(detalle.productoId, detalle.cantidadPedida);
+        });
+      }
+
       const notaPedidoActualizada = await this.comprasService.changeEstadoNotaPedido(Number(id), changeEstadoNotaPedidoDto);
       if(!notaPedidoActualizada) return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al actualizar estado de nota de pedido' });
 

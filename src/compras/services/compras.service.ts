@@ -224,6 +224,9 @@ export class ComprasService {
 
   async getNotasPedido(): Promise<NotaPedido[]> {
     const notasPedido = await this.prisma.notas_pedido.findMany({
+      orderBy: {
+        fecha: 'desc',
+      },
       include: {
         usuarios: {
           select: {
@@ -606,6 +609,25 @@ export class ComprasService {
       })
     }
   }
+
+  async addItemToInventory(idProducto: number, cantidad: number): Promise<any> {
+    const producto = await this.prisma.productos.findUnique({
+      where: {
+        id: idProducto
+      }
+    });
+    const productoActualizado = await this.prisma.productos.update({
+      where: {
+        id: idProducto
+      },
+      data: {
+        stock: producto.stock + cantidad
+      }
+    });
+    this.prisma.$disconnect();
+    return productoActualizado;
+  }
+        
 
   async getProductosProveedor(id: number): Promise<any> {
     const productos = await this.prisma.productos_proveedores.findMany({
