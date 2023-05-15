@@ -97,7 +97,7 @@ model facturas {
   id                Int                 @id @default(autoincrement())
   fecha             DateTime            @db.Date
   fecha_vencimiento DateTime            @db.Date
-  numero_factura    Int                 @default(0)
+  numero_factura    BigInt              @default(0)
   id_usuario        Int                 @default(0)
   id_estado         Int                 @default(0)
   detalles_facturas detalles_facturas[]
