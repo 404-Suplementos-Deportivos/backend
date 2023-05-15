@@ -32,6 +32,7 @@
     "@types/nodemailer": "^6.4.7",
     "bcrypt": "^5.1.0",
     "jsonwebtoken": "^9.0.0",
+    "mercadopago": "^1.5.16",
     "nodemailer": "^6.9.1",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
