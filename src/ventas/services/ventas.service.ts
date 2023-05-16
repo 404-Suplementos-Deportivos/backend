@@ -15,6 +15,16 @@ import { formatDate, gemerateInvoiceNumber } from 'src/utils/helpers';
 export class VentasService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getComprobante(idComprobante: number): Promise<any> {
+    const comprobante = await this.prisma.facturas.findUnique({
+      where: {
+        id: idComprobante,
+      },
+    });
+    this.prisma.$disconnect();
+    return comprobante;
+  }
+
   async getProductStock(idProducto: number): Promise<number> {
     const producto = await this.prisma.productos.findUnique({
       where: {
@@ -36,9 +46,9 @@ export class VentasService {
       data: {
         fecha: fecha,
         fecha_vencimiento: fechaVencimiento,
-        numero_factura: gemerateInvoiceNumber(),
+        // numero_factura: gemerateInvoiceNumber(),
         id_usuario: idUsuario,
-        id_estado: 1,
+        id_estado: 4,
         detalles_facturas: {
           create: detalleComprobante.map(detalle => {
             return {
@@ -56,26 +66,12 @@ export class VentasService {
       }
     });
     
-    // TODO: Rollback si falla algo
-    detalleComprobante.forEach(async detalle => {
-      await this.prisma.productos.update({
-        where: {
-          id: detalle.idProducto,
-        },
-        data: {
-          stock: {
-            decrement: detalle.cantidad,
-          }
-        }
-      });
-    });
-
     this.prisma.$disconnect();
     return {
       id: comprobante.id,
       fecha: formatDate(comprobante.fecha),
       fechaVencimiento: formatDate(comprobante.fecha_vencimiento),
-      numeroFactura: comprobante.numero_factura,
+      numeroFactura: Number(comprobante.numero_factura),
       idUsuario: comprobante.id_usuario,
       idEstado: comprobante.id_estado,
       detalleComprobante: comprobante.detalles_facturas.map(detalle => {
@@ -91,4 +87,42 @@ export class VentasService {
     }
   }
   
+  async selledProducts(idFactura: number, nroOrden: number): Promise<void> {
+    const factura = await this.prisma.facturas.findUnique({
+      where: {
+        id: idFactura,
+      },
+      select: {
+        detalles_facturas: true,
+      }
+    });
+    const productos = factura.detalles_facturas.map(detalle => {
+      return {
+        id: detalle.id_producto,
+        cantidad: detalle.cantidad,
+      }
+    })
+    for (const producto of productos) {
+      await this.prisma.productos.update({
+        where: {
+          id: producto.id,
+        },
+        data: {
+          stock: {
+            decrement: producto.cantidad,
+          }
+        }
+      });
+    }
+    await this.prisma.facturas.update({
+      where: {
+        id: idFactura,
+      },
+      data: {
+        id_estado: 1,
+        numero_factura: nroOrden,
+      }
+    });
+    this.prisma.$disconnect();
+  }
 }

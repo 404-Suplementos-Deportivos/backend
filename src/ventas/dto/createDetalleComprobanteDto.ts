@@ -3,4 +3,5 @@ export interface CreateDetalleComprobanteDto {
   precio: number;
   descuento: number;
   idProducto: number;
+  nombreProducto: string;
 }  
