@@ -5,7 +5,13 @@ export interface Comprobante {
   fecha: string;
   fechaVencimiento: string;
   numeroFactura: number;
-  idUsuario: number;
-  idEstado: number;
+  idUsuario?: number;
+  idEstado?: number;
+  estadoFactura?: string;
   detalleComprobante: DetalleComprobante[];
+  usuario?: {
+    nombre: string;
+    apellido: string;
+    email: string;
+  }
 }

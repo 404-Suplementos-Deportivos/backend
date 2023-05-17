@@ -7,6 +7,7 @@ import {
   productos as ProductoAPI,
 } from '@prisma/client';
 import { Comprobante } from '../models/Comprobante';
+import { Usuario } from '../models/Usuario';
 import { CreateComprobanteDto } from '../dto/createComprobanteDto';
 import { DetalleComprobante } from '../models/DetalleComprobante';
 import { formatDate, gemerateInvoiceNumber } from 'src/utils/helpers';
@@ -15,14 +16,192 @@ import { formatDate, gemerateInvoiceNumber } from 'src/utils/helpers';
 export class VentasService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getComprobante(idComprobante: number): Promise<any> {
+  async getAllByUser(idUsuario: number): Promise<any> {
+    const comprobantes = await this.prisma.facturas.findMany({
+      select: {
+        id: true,
+        fecha: true,
+        fecha_vencimiento: true,
+        numero_factura: true,
+        id_usuario: false,
+        id_estado: false,
+        detalles_facturas: {
+          select: {
+            id: true,
+            cantidad: true,
+            precio: true,
+            descuento: true,
+            productos: {
+              select: {
+                nombre: true,
+                url_imagen: true,
+              }
+            }
+          }
+        },
+        estados_factura: {
+          select: {
+            nombre: true,
+          }
+        }
+
+      },
+      where: {
+        id_usuario: idUsuario,
+      },
+     
+    });
+    this.prisma.$disconnect();
+    return comprobantes.map(comprobante => {
+      return {
+        id: comprobante.id,
+        fecha: formatDate(comprobante.fecha),
+        fechaVencimiento: formatDate(comprobante.fecha_vencimiento),
+        numeroFactura: Number(comprobante.numero_factura),
+        estadoFactura: comprobante.estados_factura.nombre,
+        detalleComprobante: comprobante.detalles_facturas.map(detalle => {
+          return {
+            id: detalle.id,
+            cantidad: Number(detalle.cantidad),
+            precio: Number(detalle.precio),
+            descuento: Number(detalle.descuento),
+            producto: {
+              nombre: detalle.productos.nombre,
+              urlImagen: detalle.productos.url_imagen,
+            }
+          } as DetalleComprobante;
+        }),
+      } as Comprobante;
+    });
+  }
+
+  async getAllOrders(): Promise<Comprobante[]> {
+    const comprobantes = await this.prisma.facturas.findMany({
+      select: {
+        id: true,
+        fecha: true,
+        fecha_vencimiento: true,
+        numero_factura: true,
+        id_usuario: true,
+        id_estado: true,
+        detalles_facturas: {
+          select: {
+            id: true,
+            cantidad: true,
+            precio: true,
+            descuento: true,
+            id_producto: true,
+            productos: {
+              select: {
+                nombre: true,
+                url_imagen: true,
+              }
+            }
+          }
+        },
+        estados_factura: {
+          select: {
+            nombre: true,
+          }
+        },
+        usuarios: {
+          select: {
+            nombre: true,
+            apellido: true,
+            email: true,
+          }
+        }
+      }
+    });
+    this.prisma.$disconnect();
+    return comprobantes.map(comprobante => {
+      return {
+        id: comprobante.id,
+        fecha: formatDate(comprobante.fecha),
+        fechaVencimiento: formatDate(comprobante.fecha_vencimiento),
+        numeroFactura: Number(comprobante.numero_factura),
+        idUsuario: comprobante.id_usuario,
+        idEstado: comprobante.id_estado,
+        estadoFactura: comprobante.estados_factura.nombre,
+        detalleComprobante: comprobante.detalles_facturas.map(detalle => {
+          return {
+            id: detalle.id,
+            cantidad: Number(detalle.cantidad),
+            precio: Number(detalle.precio),
+            descuento: Number(detalle.descuento),
+            idProducto: detalle.id_producto,
+            producto: {
+              nombre: detalle.productos.nombre,
+              urlImagen: detalle.productos.url_imagen,
+            }
+          } as DetalleComprobante;
+        }),
+        usuario: {
+          nombre: comprobante.usuarios.nombre,
+          apellido: comprobante.usuarios.apellido,
+          email: comprobante.usuarios.email,
+        }
+      } as Comprobante;
+    });
+  }
+
+  async getComprobante(idComprobante: number): Promise<Comprobante> {
     const comprobante = await this.prisma.facturas.findUnique({
       where: {
         id: idComprobante,
       },
+      select: {
+        id: true,
+        fecha: true,
+        fecha_vencimiento: true,
+        numero_factura: true,
+        id_usuario: true,
+        id_estado: true,
+        detalles_facturas: {
+          select: {
+            id: true,
+            cantidad: true,
+            precio: true,
+            descuento: true,
+            id_producto: true,
+            productos: {
+              select: {
+                nombre: true,
+                url_imagen: true,
+              }
+            }
+          }
+        },
+        estados_factura: {
+          select: {
+            nombre: true,
+          }
+        }
+      }
     });
     this.prisma.$disconnect();
-    return comprobante;
+    return {
+      id: comprobante.id,
+      fecha: formatDate(comprobante.fecha),
+      fechaVencimiento: formatDate(comprobante.fecha_vencimiento),
+      numeroFactura: Number(comprobante.numero_factura),
+      idUsuario: comprobante.id_usuario,
+      idEstado: comprobante.id_estado,
+      estadoFactura: comprobante.estados_factura.nombre,
+      detalleComprobante: comprobante.detalles_facturas.map(detalle => {
+        return {
+          id: detalle.id,
+          cantidad: Number(detalle.cantidad),
+          precio: Number(detalle.precio),
+          descuento: Number(detalle.descuento),
+          idProducto: detalle.id_producto,
+          producto: {
+            nombre: detalle.productos.nombre,
+            urlImagen: detalle.productos.url_imagen,
+          }
+        } as DetalleComprobante;
+      }),
+    } as Comprobante;
   }
 
   async getProductStock(idProducto: number): Promise<number> {
@@ -124,5 +303,38 @@ export class VentasService {
       }
     });
     this.prisma.$disconnect();
+  }
+
+  async getAllClients(): Promise<Usuario[]> {
+    const usuarios = await this.prisma.usuarios.findMany({
+      where: {
+        id_rol: 2,
+      },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        direccion: true,
+        codigo_postal: true,
+        telefono: true,
+        fecha_nacimiento: true,
+        estado: true,
+      }
+    });
+    this.prisma.$disconnect();
+    return usuarios.map(usuario => {
+      return {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        email: usuario.email,
+        direccion: usuario.direccion,
+        codigoPostal: usuario.codigo_postal,
+        telefono: usuario.telefono,
+        fechaNacimiento: usuario.fecha_nacimiento && formatDate(usuario.fecha_nacimiento),
+        estado: usuario.estado,
+      } as Usuario;
+    })
   }
 }

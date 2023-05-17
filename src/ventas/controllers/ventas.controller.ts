@@ -17,16 +17,106 @@ import { Response, Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { MailerService } from '@nestjs-modules/mailer/dist'
+import configuration from 'src/config/configuration'
 import { JwtPayloadModel } from 'src/auth/models/token.model';
 import { VentasService } from '../services/ventas.service';
 import { CreateComprobanteDto } from '../dto/createComprobanteDto';
-import configuration from 'src/config/configuration';
 import mercadoPago from 'src/utils/mercadoPago';
 
 @UseGuards(JwtAuthGuard)
 @Controller('ventas')
 export class VentasController {
-  constructor(private readonly ventasService: VentasService) {}
+  constructor(private readonly ventasService: VentasService, private mailService: MailerService) {}
+
+  @Get('all')
+  @Roles('Administrador')
+  async getAllOrders(@Res() res: Response) {
+    try {
+      const result = await this.ventasService.getAllOrders();
+      return res.status(HttpStatus.OK).json({ message: 'Comprobantes obtenidos con éxito', data: result });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener los comprobantes' });
+    }
+  }
+
+  @Get('clientes')
+  @Roles('Administrador')
+  async getAllClients(@Res() res: Response) {
+    try {
+      const result = await this.ventasService.getAllClients();
+      return res.status(HttpStatus.OK).json({ message: 'Clientes obtenidos con éxito', data: result });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener los clientes' });
+    }
+  }
+
+  @Get(':id')
+  async getStateSell(@Param('id') id: string, @Res() res: Response, @Req() req: Request) {
+    try {
+      const user = req.user as JwtPayloadModel;
+      const mp = await mercadoPago();
+      const payment = await mp.payment.get(id);
+  
+      const comprobante = await this.ventasService.getComprobante(Number(payment.response.external_reference))
+      if(comprobante.idEstado === 1) return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Comprobante pagado'});
+      
+      if(payment.body.status === 'approved') {
+        await this.ventasService.selledProducts(comprobante.id, Number(id));
+        
+        // Enviar mail de confirmación de compra con nro de factura y productos
+        try {
+          await this.mailService.sendMail({
+            to: user.email,
+            from: configuration().nodemailer.auth.user,
+            subject: '404 - Compra realizada',
+            template: 'sell-done',
+            context: {
+              nombre: user.nombre,
+              nroFactura: id,
+              total: comprobante.detalleComprobante.reduce((acc, curr) => acc + (curr.precio * curr.cantidad), 0),
+            },
+            text: 'Gracias por comprar en 404',
+            html: `
+              <h1>404 - Compra realizada</h1>
+              <p>Hola ${user.nombre},</p>
+              <p>Gracias por comprar en 404, tu compra se ha realizado con éxito.</p>
+              <p>Nro de factura: #${id}</p>
+              <p>Productos:</p>
+              <ul>
+                ${comprobante.detalleComprobante.map(producto => `<li>${producto.cantidad} x ${producto.producto.nombre} - $${producto.precio}</li>`).join('')}
+              </ul>
+              <p>Total: $${comprobante.detalleComprobante.reduce((acc, curr) => acc + (curr.precio * curr.cantidad), 0)}</p>
+              <p>Si tu no realizaste esta compra, puedes ignorar el mensaje.</p>
+            `
+          })
+        } catch (error) {
+          console.log(error);
+        }
+
+        return res.status(HttpStatus.OK).json({ message: 'Pago aprobado', data: payment.body.status });
+      }
+
+      return res.status(HttpStatus.OK).json({ message: 'Pago rechazado', data: payment.body.status });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener el estado del pago' });
+    }
+  }
+
+  @Get()
+  async getAll(@Req() req: Request, @Res() res: Response) {
+    try {
+      const user = req.user as JwtPayloadModel;
+      const result = await this.ventasService.getAllByUser(user.id);
+      return res.status(HttpStatus.OK).json({ message: 'Comprobantes obtenidos con éxito', data: result });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener los comprobantes' });
+    }
+  }
 
   @Post()
   async create(@Body() createComprobanteDto: CreateComprobanteDto, @Req() req: Request, @Res() res: Response) {
@@ -77,27 +167,6 @@ export class VentasController {
     } catch (error) {
       console.log(error);
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al realizar el pedido' });
-    }
-  }
-
-  @Get(':id')
-  async getStateSell(@Param('id') id: string, @Res() res: Response) {
-    try {
-      const mp = await mercadoPago();
-      const payment = await mp.payment.get(id);
-  
-      const comprobante = await this.ventasService.getComprobante(Number(payment.response.external_reference))
-      if(comprobante.id_estado === 1) return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Comprobante pagado'});
-      
-      if(payment.body.status === 'approved') {
-        await this.ventasService.selledProducts(comprobante.id, Number(id));
-        return res.status(HttpStatus.OK).json({ message: 'Pago aprobado', data: payment.body.status });
-      }
-
-      return res.status(HttpStatus.OK).json({ message: 'Pago rechazado', data: payment.body.status });
-    } catch (error) {
-      console.log(error);
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener el estado del pago' });
     }
   }
 }

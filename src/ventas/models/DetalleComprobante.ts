@@ -3,6 +3,10 @@ export interface DetalleComprobante {
   cantidad: number;
   precio: number;
   descuento: number;
-  idProducto: number;
-  idComprobante: number;
+  idProducto?: number;
+  idComprobante?: number;
+  producto?: {
+    nombre: string;
+    urlImagen: string;
+  }
 }
