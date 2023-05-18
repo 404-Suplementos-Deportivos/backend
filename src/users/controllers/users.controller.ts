@@ -220,6 +220,13 @@ export class UsersController {
       const userJwt = req.user as JwtPayloadModel
       if(userJwt.id !== user.id && userJwt.rol !== 'Administrador') return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Acción Inválida' })
 
+      if(!user.estado && userJwt.rol === 'Administrador') {
+        const userUpdated = await this.usersService.activateAccount(id);
+        if(!userUpdated) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
+
+        return res.status(HttpStatus.OK).json({ message: 'Usuario activado' })
+      }
+
       const userDeleted = await this.usersService.deleteUser(id);
       if(!userDeleted) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
 

@@ -10,6 +10,7 @@ import { Comprobante } from '../models/Comprobante';
 import { Usuario } from '../models/Usuario';
 import { CreateComprobanteDto } from '../dto/createComprobanteDto';
 import { DetalleComprobante } from '../models/DetalleComprobante';
+import { EstadoComprobante } from '../models/EstadoComprobante';
 import { formatDate, gemerateInvoiceNumber } from 'src/utils/helpers';
 
 @Injectable()
@@ -336,5 +337,33 @@ export class VentasService {
         estado: usuario.estado,
       } as Usuario;
     })
+  }
+
+  async getEstados(): Promise<EstadoComprobante[]> {
+    const estados = await this.prisma.estados_factura.findMany({
+      select: {
+        id: true,
+        nombre: true,
+      }
+    });
+    this.prisma.$disconnect();
+    return estados.map(estado => {
+      return {
+        id: estado.id,
+        nombre: estado.nombre,
+      } as EstadoComprobante;
+    })
+  }
+
+  async changeState(idComprobante: number, idEstado: number): Promise<void> {
+    await this.prisma.facturas.update({
+      where: {
+        id: idComprobante,
+      },
+      data: {
+        id_estado: idEstado,
+      }
+    });
+    this.prisma.$disconnect();
   }
 }

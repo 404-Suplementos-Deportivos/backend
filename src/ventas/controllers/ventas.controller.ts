@@ -29,6 +29,28 @@ import mercadoPago from 'src/utils/mercadoPago';
 export class VentasController {
   constructor(private readonly ventasService: VentasService, private mailService: MailerService) {}
 
+  @Put('change-state/:id')
+  @Roles('Administrador')
+  async changeState(@Param('id') id: string, @Body() body: { idEstado: number }, @Res() res: Response) {
+    try {
+      const comprobante = await this.ventasService.getComprobante(Number(id));
+      if(comprobante.idEstado === 3 || comprobante.idEstado === 1) return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Comprobante cancelado'});
+
+      const result = await this.ventasService.changeState(Number(id), body.idEstado);
+
+      if(body.idEstado === 1) {
+        await this.ventasService.selledProducts(comprobante.id, comprobante.numeroFactura);
+      }
+
+      // Enviar mail de cambio de estado
+      
+      return res.status(HttpStatus.OK).json({ message: 'Estado cambiado con éxito' });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al cambiar el estado' });
+    }
+  }
+
   @Get('all')
   @Roles('Administrador')
   async getAllOrders(@Res() res: Response) {
@@ -46,10 +68,22 @@ export class VentasController {
   async getAllClients(@Res() res: Response) {
     try {
       const result = await this.ventasService.getAllClients();
-      return res.status(HttpStatus.OK).json({ message: 'Clientes obtenidos con éxito', data: result });
+      return res.status(HttpStatus.OK).json({ result });
     } catch (error) {
       console.log(error);
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener los clientes' });
+    }
+  }
+
+  @Get('estados')
+  @Roles('Administrador')
+  async getAllStates(@Res() res: Response) {
+    try {
+      const result = await this.ventasService.getEstados();
+      return res.status(HttpStatus.OK).json({ message: 'Estados obtenidos con éxito', data: result });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al obtener los estados' });
     }
   }
 

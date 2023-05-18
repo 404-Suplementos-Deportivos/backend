@@ -158,6 +158,19 @@ export class UsersService {
     return user;
   }
 
+  async activateAccount(id: string): Promise<UserModel> {
+    const user = await this.prisma.usuarios.update({
+      where: {
+        id: parseInt(id)
+      },
+      data: {
+        estado: true
+      }
+    })
+    this.prisma.$disconnect();
+    return user;
+  }
+
   async getCart(id: number): Promise<CartModel> {
     const cart = await this.prisma.carrito.findUnique({
       where: {
