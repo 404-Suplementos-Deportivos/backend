@@ -18,6 +18,7 @@ import { UsersService } from '../services/users.service';
 import { ProductsService } from 'src/products/services/products.service';
 import { UserDTO } from '../dto/UserDto'
 import { CartDto } from '../dto/CartDto';
+import { ChangePasswordDto } from '../dto/ChangePasswordDto';
 import { JwtPayloadModel } from 'src/auth/models/token.model';
 import { Cart } from '../models/Cart';
 import { formatDate } from 'src/utils/helpers';
@@ -135,6 +136,25 @@ export class UsersController {
       if(!roles) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Roles no encontrados' })
 
       return res.status(HttpStatus.OK).json(roles)
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
+    }
+  }
+
+  // ! Usuarios ChangePassword - PUT
+  @Put('/change-password')
+  async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() req: Request, @Res() res: Response): Promise<any> {
+    try {
+      const userJwt = req.user as JwtPayloadModel
+      const user = await this.usersService.getUserById(userJwt.id.toString())
+      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
+
+      const response = await this.usersService.changePassword(userJwt.id.toString(), changePasswordDto.password)
+      if(!response) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se pudo cambiar la contraseña' })
+
+      return res.status(HttpStatus.OK).json({ message: 'Contraseña cambiada exitosamente' })
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
     } finally {

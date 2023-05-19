@@ -100,7 +100,8 @@ export class AuthService {
           select: {
             nombre: true
           }
-        }
+        },
+        estado: true
       }
     })
     this.prisma.$disconnect();

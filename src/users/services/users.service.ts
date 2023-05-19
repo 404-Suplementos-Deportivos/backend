@@ -132,6 +132,19 @@ export class UsersService {
     return user;
   }
 
+  async changePassword(id: string, password: string): Promise<UserModel> {
+    const user = await this.prisma.usuarios.update({
+      where: {
+        id: parseInt(id)
+      },
+      data: {
+        password: await encryptPassword(password)
+      }
+    })
+    this.prisma.$disconnect();
+    return user;
+  }
+
   async deleteUser(id: string): Promise<UserModel> {
     const user = await this.prisma.usuarios.update({
       where: {
