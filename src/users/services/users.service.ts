@@ -105,7 +105,8 @@ export class UsersService {
         codigo_postal: data.codigoPostal,
         telefono: data.telefono,
         fecha_nacimiento: data.fechaNacimiento,
-        id_rol: data.idRol,
+        id_rol: Number(data.idRol),
+        fecha_creacion: new Date().toISOString(),
       }
     })
     this.prisma.$disconnect();

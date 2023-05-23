@@ -235,6 +235,7 @@ model usuarios {
   fecha_nacimiento   DateTime?      @db.Date
   estado             Boolean        @default(true)
   id_rol             Int            @default(2)
+  fecha_creacion     DateTime       @db.Date
   carrito            carrito?
   facturas           facturas[]
   ganancias          ganancias[]
