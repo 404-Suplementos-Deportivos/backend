@@ -78,12 +78,11 @@ export class ReportesService {
     const cantidadUsuariosMensual: any = await this.prisma.$queryRaw`
       SELECT 
         to_char(date_trunc('month', fecha_creacion), 'MM') AS mes,
-        to_char(date_trunc('year', fecha_creacion), 'YYYY') AS anio,
         CAST(COUNT(*) AS INTEGER) AS cantidad_usuarios
       FROM usuarios
       WHERE fecha_creacion >= ${new Date(fechaDesde)}
       AND fecha_creacion <= ${new Date(fechaHasta)}
-      GROUP BY mes, anio
+      GROUP BY mes
     `;
 
     const result = []
@@ -95,6 +94,130 @@ export class ReportesService {
         cantidadUsuarios: cantidad ? cantidad.cantidad_usuarios : 0
       })
     }
+    return result
+  }
+
+  async getLastSellsBuys(fechasDto: FechasDto): Promise<any> {
+    const { fechaDesde, fechaHasta } = fechasDto
+    const ventasMensuales: any = await this.prisma.$queryRaw`
+      SELECT
+        to_char(date_trunc('month', F.fecha), 'MM') AS mes,
+        SUM(DF.precio * DF.cantidad) as resultado
+      FROM facturas F
+      INNER JOIN detalles_facturas DF ON F.id = DF.id_factura
+      WHERE fecha >= ${new Date(fechaDesde)}
+      AND fecha <= ${new Date(fechaHasta)}
+      AND F.id_estado = 1
+      GROUP BY mes
+      ORDER BY mes ASC
+    `;
+
+    const comprasMensuales: any = await this.prisma.$queryRaw`
+      SELECT
+        to_char(date_trunc('month', NP.fecha), 'MM') AS mes,
+        SUM(DNP.precio * DNP.cantidad_pedida) as resultado
+      FROM notas_pedido NP
+      INNER JOIN detalles_np DNP ON NP.id = DNP.id_nota_pedido
+      WHERE NP.id_estado_np = 3
+      AND fecha >= ${new Date(fechaDesde)}
+      AND fecha <= ${new Date(fechaHasta)}
+      GROUP BY mes
+      ORDER BY mes ASC
+    `;
+
+    const resultadoVentas = []
+    const resultadoCompras = []
+    for(let i = 0; i < 12; i++) {
+      const mes = i < 9 ? `0${i + 1}` : `${i + 1}`
+      const cantidadVentas = ventasMensuales.find((item: any) => item.mes === mes)
+      const cantidadCompras = comprasMensuales.find((item: any) => item.mes === mes)
+      resultadoVentas.push({
+        mes,
+        monto: cantidadVentas ? cantidadVentas.resultado : 0
+      })
+      resultadoCompras.push({
+        mes,
+        monto: cantidadCompras ? cantidadCompras.resultado : 0
+      })
+    }
+
+    return {
+      ventas: resultadoVentas,
+      compras: resultadoCompras
+    }
+  }
+
+  async getCategorySells(fechasDto: FechasDto): Promise<any> {
+    const { fechaDesde, fechaHasta } = fechasDto
+    const cantidadVentas: any = await this.prisma.$queryRaw`
+      SELECT
+        CA.nombre AS categoria,
+        SUM(DF.cantidad) AS cantidad_vendida
+      FROM detalles_facturas DF
+      INNER JOIN (
+        SELECT
+          id
+        FROM facturas
+        WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(fechaHasta)}
+        AND id_estado = 1
+      ) AS F ON F.id = DF.id_factura
+      INNER JOIN productos PR ON PR.id = DF.id_producto
+      RIGHT JOIN categorias CA ON CA.id = PR.id_categoria
+      GROUP BY CA.nombre;
+    `;
+    
+    const result = cantidadVentas.map((item: any) => {
+      return {
+        categoria: item.categoria,
+        cantidadVendida: Number(item.cantidad_vendida)
+      }
+    })
+    return result
+  }
+
+  async getMostSelledProducts(fechasDto: FechasDto): Promise<any> {
+    const { fechaDesde, fechaHasta } = fechasDto
+    const productosMasVendidos: any = await this.prisma.$queryRaw`
+      SELECT
+        CA.nombre AS categoria,
+        PR.nombre AS producto_mas_vendido,
+        SUM(DF.cantidad) AS cantidad_vendida
+      FROM detalles_facturas DF
+      INNER JOIN (
+        SELECT id
+        FROM facturas
+        WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(fechaHasta)}
+      ) AS F ON F.id = DF.id_factura
+      INNER JOIN productos PR ON PR.id = DF.id_producto
+      RIGHT JOIN categorias CA ON CA.id = PR.id_categoria
+      GROUP BY CA.nombre, PR.nombre
+      HAVING SUM(DF.cantidad) = (
+        SELECT MAX(total_vendido)
+        FROM (
+          SELECT CA.nombre AS categoria, PR.nombre AS producto, SUM(DF.cantidad) AS total_vendido
+          FROM detalles_facturas DF
+          INNER JOIN (
+            SELECT id
+            FROM facturas
+            WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(fechaHasta)}
+          ) AS F ON F.id = DF.id_factura
+          INNER JOIN productos PR ON PR.id = DF.id_producto
+          RIGHT JOIN categorias CA ON CA.id = PR.id_categoria
+          GROUP BY CA.nombre, PR.nombre
+        ) AS subquery
+        WHERE subquery.categoria = CA.nombre
+      ) OR SUM(DF.cantidad) IS NULL
+      ORDER BY categoria ASC
+      LIMIT 7;
+    `;
+    
+    const result = productosMasVendidos.map((item: any) => {
+      return {
+        categoria: item.categoria,
+        productoMasVendido: item.producto_mas_vendido,
+        cantidadVendida: Number(item.cantidad_vendida)
+      }
+    })
     return result
   }
 }
