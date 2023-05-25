@@ -160,4 +160,36 @@ export class ReportesController {
       })
     }
   }
+
+  @Get('tipos-usuario')
+  @Roles('Administrador')
+  async getTiposUsuario(@Res() res: Response, @Req() req: Request) {
+    try {
+      const data = await this.reportesService.getTiposUsuario()
+      return res.status(HttpStatus.OK).json({
+        data
+      })
+    } catch (error) {
+      console.log(error)
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Error al obtener los datos',
+      })
+    }
+  }
+
+  @Get('categorias')
+  @Roles('Administrador')
+  async getCategorias(@Res() res: Response, @Req() req: Request) {
+    try {
+      const data = await this.reportesService.getCategorias()
+      return res.status(HttpStatus.OK).json({
+        data
+      })
+    } catch (error) {
+      console.log(error)
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Error al obtener los datos',
+      })
+    }
+  }
 }
