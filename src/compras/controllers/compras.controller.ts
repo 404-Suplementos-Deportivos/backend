@@ -93,7 +93,7 @@ export class ComprasController {
         });
       }
 
-      const notaPedidoActualizada = await this.comprasService.changeEstadoNotaPedido(Number(id), changeEstadoNotaPedidoDto);
+      const notaPedidoActualizada = await this.comprasService.changeEstadoNotaPedido(notaPedido, changeEstadoNotaPedidoDto);
       if(!notaPedidoActualizada) return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error al actualizar estado de nota de pedido' });
 
       res.status(HttpStatus.OK).json({ message: 'Estado de nota de pedido actualizado correctamente' });

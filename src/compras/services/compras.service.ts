@@ -237,7 +237,10 @@ export class ComprasService {
         proveedores: {
           select: {
             id: true,
-            nombre: true
+            nombre: true,
+            direccion: true,
+            email: true,
+            telefono: true,
           }
         },
         estados_np: {
@@ -278,6 +281,9 @@ export class ComprasService {
         fechaVencimiento: formatDate(notaPedido.fecha_vencimiento),
         usuario: notaPedido.usuarios.nombre + ' ' + notaPedido.usuarios.apellido,
         proveedor: notaPedido.proveedores.nombre,
+        proveedorDireccion: notaPedido.proveedores.direccion,
+        proveedorEmail: notaPedido.proveedores.email,
+        proveedorTelefono: notaPedido.proveedores.telefono,
         proveedorId: notaPedido.proveedores.id,
         estadoNP: notaPedido.estados_np.nombre,
         estadoNPId: notaPedido.estados_np.id,
@@ -541,13 +547,13 @@ export class ComprasService {
     }
   }
 
-  async changeEstadoNotaPedido(id: number, notaPedido: ChangeEstadoNotaPedidoDto): Promise<NotaPedido> {
+  async changeEstadoNotaPedido(notaPedido: NotaPedido, estadoNP: ChangeEstadoNotaPedidoDto): Promise<NotaPedido> {
     const notaPedidoActualizada = await this.prisma.notas_pedido.update({
       where: {
-        id: id
+        id: notaPedido.id
       },
       data: {
-        id_estado_np: notaPedido.estadoNPId,
+        id_estado_np: estadoNP.estadoNPId,
       },
       include: {
         usuarios: {
@@ -573,6 +579,7 @@ export class ComprasService {
         },
         detalles_np: {
           select:{
+            id: true,
             cantidad_pedida: true,
             cantidad_recibida: true,
             precio: true,
@@ -586,6 +593,16 @@ export class ComprasService {
           },
         }
       }
+    });
+    notaPedidoActualizada.detalles_np.forEach(async (detalleNP) => {
+      await this.prisma.detalles_np.update({
+        where: {
+          id: detalleNP.id
+        },
+        data: {
+          cantidad_recibida: detalleNP.cantidad_pedida
+        }
+      });
     });
     this.prisma.$disconnect();
     return {
