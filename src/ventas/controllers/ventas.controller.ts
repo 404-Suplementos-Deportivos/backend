@@ -99,6 +99,8 @@ export class VentasController {
       
       if(payment.body.status === 'approved') {
         await this.ventasService.selledProducts(comprobante.id, Number(id));
+
+        // Crear PDF
         
         // Enviar mail de confirmación de compra con nro de factura y productos
         try {
