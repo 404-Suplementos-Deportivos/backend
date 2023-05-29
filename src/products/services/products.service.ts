@@ -79,6 +79,7 @@ export class ProductsService {
   async deleteCategory(id: string): Promise<Categoria> {
     const subcategorias = await this.findAllSubCategories(id);
     for (const subcategoria of subcategorias) {
+      console.log( subcategoria.id.toString() )
       await this.deleteSubCategory(subcategoria.id.toString());
     }
     const deletedCategory = await this.prisma.categorias.update({
