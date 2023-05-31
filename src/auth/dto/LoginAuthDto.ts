@@ -8,7 +8,8 @@ export interface LoginAuthDto {
   cuenta_confirmada?: boolean
   roles?: {
     nombre: string
-  }
+  },
+  estado?: boolean
 }
 
 const loginAuthSchema = z.object({

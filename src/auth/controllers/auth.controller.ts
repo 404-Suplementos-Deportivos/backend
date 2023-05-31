@@ -204,6 +204,8 @@ export class AuthController {
 
       if(!user.cuenta_confirmada) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Debe confirmar su cuenta, revise su corre' }) 
 
+      if(!user.estado) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'Usuario deshabilitado' })
+
       const userResponse = {
         id: user.id,
         email: user.email,

@@ -50,16 +50,16 @@ model detalles_facturas {
 }
 
 model detalles_np {
-  id                     Int                   @id @default(autoincrement())
-  cantidad_pedida        Int
-  cantidad_recibida      Int
-  precio                 Decimal               @db.Money
-  descuento              Int
-  estado                 Boolean
-  id_productos_proveedor Int                   @default(0)
-  id_nota_pedido         Int                   @default(0)
-  notas_pedido           notas_pedido          @relation(fields: [id_nota_pedido], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesnp_notaspedido")
-  productos_proveedores  productos_proveedores @relation(fields: [id_productos_proveedor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesnp_productosproveedores")
+  id                Int          @id @default(autoincrement())
+  cantidad_pedida   Int
+  cantidad_recibida Int
+  precio            Decimal      @db.Money
+  descuento         Int
+  estado            Boolean
+  id_nota_pedido    Int          @default(0)
+  id_producto       Int          @default(0)
+  notas_pedido      notas_pedido @relation(fields: [id_nota_pedido], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallesnp_notaspedido")
+  productos         productos    @relation(fields: [id_producto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detappesnp_productos")
 }
 
 model detalles_pedidos {
@@ -97,7 +97,7 @@ model facturas {
   id                Int                 @id @default(autoincrement())
   fecha             DateTime            @db.Date
   fecha_vencimiento DateTime            @db.Date
-  numero_factura    Int                 @default(0)
+  numero_factura    BigInt              @default(0)
   id_usuario        Int                 @default(0)
   id_estado         Int                 @default(0)
   detalles_facturas detalles_facturas[]
@@ -152,6 +152,7 @@ model productos {
   id_categoria          Int                     @default(0)
   id_subcategoria       Int                     @default(0)
   detalles_facturas     detalles_facturas[]
+  detalles_np           detalles_np[]
   detalles_pedidos      detalles_pedidos[]
   categorias            categorias              @relation(fields: [id_categoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productos_categorias")
   subcategorias         subcategorias           @relation(fields: [id_subcategoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productos_subcategorias")
@@ -159,14 +160,13 @@ model productos {
 }
 
 model productos_proveedores {
-  id           Int           @id @default(autoincrement())
-  precio       Decimal       @db.Money
-  estado       Boolean       @default(true)
-  id_producto  Int           @default(0)
-  id_proveedor Int           @default(0)
-  detalles_np  detalles_np[]
-  productos    productos     @relation(fields: [id_producto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productosproveedores_productos")
-  proveedores  proveedores   @relation(fields: [id_proveedor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productosproveedores_proveedores")
+  id           Int         @id @default(autoincrement())
+  precio       Decimal     @db.Money
+  estado       Boolean     @default(true)
+  id_producto  Int         @default(0)
+  id_proveedor Int         @default(0)
+  productos    productos   @relation(fields: [id_producto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productosproveedores_productos")
+  proveedores  proveedores @relation(fields: [id_proveedor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_productosproveedores_proveedores")
 }
 
 model proveedores {
@@ -235,6 +235,7 @@ model usuarios {
   fecha_nacimiento   DateTime?      @db.Date
   estado             Boolean        @default(true)
   id_rol             Int            @default(2)
+  fecha_creacion     DateTime       @db.Date
   carrito            carrito?
   facturas           facturas[]
   ganancias          ganancias[]

@@ -1,14 +1,15 @@
 import {
   Controller,
   Get,
+  Post,
   Put,
+  Delete,
   Body,
   Param,
   Res,
   Req,
   HttpStatus,
   UseGuards,
-  Post,
 } from '@nestjs/common'
 import { Response, Request } from 'express'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -17,6 +18,7 @@ import { UsersService } from '../services/users.service';
 import { ProductsService } from 'src/products/services/products.service';
 import { UserDTO } from '../dto/UserDto'
 import { CartDto } from '../dto/CartDto';
+import { ChangePasswordDto } from '../dto/ChangePasswordDto';
 import { JwtPayloadModel } from 'src/auth/models/token.model';
 import { Cart } from '../models/Cart';
 import { formatDate } from 'src/utils/helpers';
@@ -26,7 +28,22 @@ import { formatDate } from 'src/utils/helpers';
 export class UsersController {
   constructor(private usersService: UsersService, private productsService: ProductsService) {}
 
-  // ! Carrito
+  // ! Usuarios Confirmar Cuenta - GET
+  @Get('/confirm-account/:id')
+  async confirmAccount(@Param('id') id: string, @Res() res: Response): Promise<any> {
+    try {
+      const user = await this.usersService.getUserById(id)
+      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró el usuario.' })
+
+      const userConfirmed = await this.usersService.confirmAccount(id)
+      if(!userConfirmed) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se pudo confirmar la cuenta.' })
+      res.status(HttpStatus.OK).json({ message: 'Cuenta confirmada.' })
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message })
+    }
+  }
+
+  // ! Carrito - GET
   @Get('/cart')
   async getCart(@Req() req: Request, @Res() res: Response): Promise<any> {
     try {
@@ -59,6 +76,7 @@ export class UsersController {
     }
   }
 
+  // ! Carrito - POST
   @Post('/cart')
   async addToCart(@Body() cartDTO: CartDto, @Req() req: Request, @Res() res: Response): Promise<any> {
     try {
@@ -109,14 +127,15 @@ export class UsersController {
     }
   }
 
-  @Get()
+  // ! Roles - GET
+  @Get('/roles')
   @Roles('Administrador')
-  async getUsers(@Res() res: Response): Promise<any> {
+  async getRoles(@Res() res: Response): Promise<any> {
     try {
-      const users = await this.usersService.getUsers();
-      if(!users) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No users found' })
+      const roles = await this.usersService.getRoles();
+      if(!roles) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Roles no encontrados' })
 
-      return res.status(HttpStatus.OK).json(users)
+      return res.status(HttpStatus.OK).json(roles)
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
     } finally {
@@ -124,6 +143,26 @@ export class UsersController {
     }
   }
 
+  // ! Usuarios ChangePassword - PUT
+  @Put('/change-password')
+  async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() req: Request, @Res() res: Response): Promise<any> {
+    try {
+      const userJwt = req.user as JwtPayloadModel
+      const user = await this.usersService.getUserById(userJwt.id.toString())
+      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
+
+      const response = await this.usersService.changePassword(userJwt.id.toString(), changePasswordDto.password)
+      if(!response) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se pudo cambiar la contraseña' })
+
+      return res.status(HttpStatus.OK).json({ message: 'Contraseña cambiada exitosamente' })
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
+    }
+  }
+
+  // ! Usuario - GET
   @Get(':id')
   async getUser(@Param('id') id: string, @Req() req: Request, @Res() res: Response): Promise<any> {
     try {
@@ -140,8 +179,8 @@ export class UsersController {
         email: user.email,
         direccion: user.direccion,
         codigoPostal: user.codigo_postal,
-        telefono: user.telefono,
-        fechaNacimiento: formatDate(user.fecha_nacimiento) // Tipo Date de la BD
+        telefono: user.telefono ? user.telefono : null,
+        fechaNacimiento: user.fecha_nacimiento ? new Date(user.fecha_nacimiento).toISOString().split('T')[0] : null,
       }
 
       return res.status(HttpStatus.OK).json(userResponse)
@@ -152,10 +191,12 @@ export class UsersController {
     }
   }
 
+  // ! Usuario - PUT
   @Put(':id')
   async updateUser(@Param('id') id: string, @Body() data: UserDTO, @Req() req: Request, @Res() res: Response): Promise<any> {
     try {
       // Convertir Fecha de String a Fecha para la BD
+      console.log( data )
       if(data.fechaNacimiento) data.fechaNacimiento = new Date(data.fechaNacimiento).toISOString()
       const user = await this.usersService.getUserById(id);
       if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
@@ -164,7 +205,7 @@ export class UsersController {
       if(userMail && userMail !== user.id) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'El email ya está en uso' })
 
       const userJwt = req.user as JwtPayloadModel
-      if(userJwt.id !== user.id) return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Acción Inválida' })
+      if(userJwt.id !== user.id && userJwt.rol !== 'Administrador') return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Acción Inválida' })
 
       const userUpdated = await this.usersService.updateUser(id, data);
       if(!userUpdated) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
@@ -176,11 +217,87 @@ export class UsersController {
         email: userUpdated.email,
         direccion: userUpdated.direccion,
         codigoPostal: userUpdated.codigo_postal,
-        telefono: userUpdated.telefono,
-        fechaNacimiento: formatDate(userUpdated.fecha_nacimiento) // Tipo Date de la BD
+        telefono: userUpdated.telefono ? userUpdated.telefono : null,
+        fechaNacimiento: userUpdated.fecha_nacimiento ? formatDate(userUpdated.fecha_nacimiento) : null,  // Tipo Date de la BD
       }
 
-      return res.status(HttpStatus.OK).json(userResponse)
+      return res.status(HttpStatus.OK).json({ message: 'Usuario actualizado' })
+    } catch (error) {
+      console.log( error )
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
+    }
+  }
+
+  // ! Usuario - DELETE
+  @Delete(':id')
+  async deleteUser(@Param('id') id: string, @Req() req: Request, @Res() res: Response): Promise<any> {
+    try {
+      const user = await this.usersService.getUserById(id);
+      if(!user) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
+
+      const userJwt = req.user as JwtPayloadModel
+      if(userJwt.id !== user.id && userJwt.rol !== 'Administrador') return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Acción Inválida' })
+
+      if(!user.estado && userJwt.rol === 'Administrador') {
+        const userUpdated = await this.usersService.activateAccount(id);
+        if(!userUpdated) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
+
+        return res.status(HttpStatus.OK).json({ message: 'Usuario activado' })
+      }
+
+      const userDeleted = await this.usersService.deleteUser(id);
+      if(!userDeleted) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuario no encontrado' })
+
+      return res.status(HttpStatus.OK).json({ message: 'Usuario eliminado' })
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
+    }
+  }
+
+  // ! Usuarios - GET
+  @Get()
+  @Roles('Administrador')
+  async getUsers(@Res() res: Response): Promise<any> {
+    try {
+      const users = await this.usersService.getUsers();
+      if(!users) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Usuarios no encontrados' })
+
+      return res.status(HttpStatus.OK).json(users)
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
+    } finally {
+      res.end()
+    }
+  }
+
+  // ! Usuario - POST
+  @Post()
+  async createUser(@Body() data: UserDTO, @Res() res: Response): Promise<any> {
+    try {
+      // Convertir Fecha de String a Fecha para la BD
+      if(data.fechaNacimiento) data.fechaNacimiento = new Date(data.fechaNacimiento).toISOString()
+      const user = await this.usersService.getUserByEmail(data.email);
+      if(user) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'El email ya está en uso' })
+
+      const userCreated = await this.usersService.createUser(data);
+      if(!userCreated) return res.status(HttpStatus.BAD_REQUEST).json({ message: 'No se pudo crear el usuario' })
+
+      const userResponse: UserDTO = {
+        id: userCreated.id,
+        nombre: userCreated.nombre,
+        apellido: userCreated.apellido,
+        email: userCreated.email,
+        direccion: userCreated.direccion,
+        codigoPostal: userCreated.codigo_postal,
+        telefono: userCreated.telefono ? userCreated.telefono : null,
+        fechaNacimiento: userCreated.fecha_nacimiento ? formatDate(userCreated.fecha_nacimiento) : null,  // Tipo Date de la BD
+      }
+
+      return res.status(HttpStatus.CREATED).json({ message: 'Usuario creado correctamente' })
     } catch (error) {
       console.log( error )
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error)
