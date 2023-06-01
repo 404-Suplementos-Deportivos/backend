@@ -226,7 +226,7 @@ export class ReportesService {
           ) AS subquery
           WHERE subquery.categoria = CA.nombre
         ) OR SUM(DF.cantidad) IS NULL
-        ORDER BY categoria ASC
+        ORDER BY cantidad_vendida DESC
         LIMIT 7;
       `;
     } else {
