@@ -222,7 +222,7 @@ export class ProductsController {
       const product = await this.productsService.findProductById(id)
       if(!product) return res.status(HttpStatus.NOT_FOUND).json({ message: 'No se encontró el producto.' })
 
-      product.precioVenta = product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)
+      product.precioVenta = Number((product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)).toFixed(2))
 
       res.status(HttpStatus.OK).json(product)
     } catch (error) {
@@ -274,7 +274,7 @@ export class ProductsController {
       if (!products) return res.status(HttpStatus.NOT_FOUND).json({ message: 'Error al obtener los productos.' });
   
       products.forEach(product => {
-        product.precioVenta = product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)
+        product.precioVenta = Number((product.precioLista + (product.precioLista * lastProfit.porcentaje / 100)).toFixed(2))
       });
   
       res.status(HttpStatus.OK).json(products);

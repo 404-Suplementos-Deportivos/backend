@@ -41,7 +41,7 @@ model cupones_descuento {
 model detalles_facturas {
   id          Int       @id @default(autoincrement())
   cantidad    Int
-  precio      Decimal   @db.Money
+  precio      Decimal   @db.Decimal(14, 2)
   descuento   Int
   id_producto Int       @default(0)
   id_factura  Int       @default(0)
@@ -53,7 +53,7 @@ model detalles_np {
   id                Int          @id @default(autoincrement())
   cantidad_pedida   Int
   cantidad_recibida Int
-  precio            Decimal      @db.Money
+  precio            Decimal      @db.Decimal(14, 2)
   descuento         Int
   estado            Boolean
   id_nota_pedido    Int          @default(0)
@@ -65,7 +65,7 @@ model detalles_np {
 model detalles_pedidos {
   id          Int       @id @default(autoincrement())
   cantidad    Int
-  precio      Decimal   @db.Money
+  precio      Decimal   @db.Decimal(14, 2)
   id_producto Int       @default(0)
   id_pedido   Int       @default(0)
   pedidos     pedidos   @relation(fields: [id_pedido], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detallespedidos_pedidos")
@@ -145,7 +145,7 @@ model productos {
   nombre                String                  @db.VarChar(80)
   descripcion           String                  @db.VarChar(600)
   url_imagen            String                  @db.VarChar
-  precio_lista          Decimal                 @db.Money
+  precio_lista          Decimal                 @db.Decimal(9, 2)
   stock                 Int                     @default(0)
   stock_minimo          Int
   estado                Boolean                 @default(true)
@@ -161,7 +161,7 @@ model productos {
 
 model productos_proveedores {
   id           Int         @id @default(autoincrement())
-  precio       Decimal     @db.Money
+  precio       Decimal     @db.Decimal(9, 2)
   estado       Boolean     @default(true)
   id_producto  Int         @default(0)
   id_proveedor Int         @default(0)
