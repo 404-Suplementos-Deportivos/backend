@@ -5,7 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2023-05-24 14:21:22
+-- Started on 2023-06-08 08:35:56
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1174,9 +1174,9 @@ COPY public.banners (id, nombre, descripcion, url_imagen) FROM stdin;
 
 COPY public.carrito (id, id_usuario, productos) FROM stdin;
 44	103	[{"cantidad": 2, "id_producto": 2}, {"cantidad": 4, "id_producto": 1}]
+47	117	[]
 45	114	[]
 43	90	[{"cantidad": 2, "id_producto": 27}, {"cantidad": 2, "id_producto": 3}]
-47	117	[]
 46	116	[]
 \.
 
@@ -1245,6 +1245,27 @@ COPY public.detalles_facturas (id, cantidad, precio, descuento, id_producto, id_
 175	1	$ 7.623,00	0	1	138
 176	3	$ 7.623,00	0	1	140
 177	2	$ 1.052,70	0	31	140
+178	1	$ 2.783,00	0	28	141
+179	2	$ 9.075,00	0	2	141
+180	3	$ 14.520,00	0	3	142
+181	2	$ 21.780,00	0	7	142
+182	2	$ 14.520,00	0	46	143
+183	1	$ 20.570,00	0	54	143
+184	1	$ 7.381,00	0	50	143
+185	1	$ 56.870,00	0	60	143
+186	2	$ 16.335,00	0	65	144
+187	1	$ 25.410,00	0	66	144
+188	1	$ 7.865,00	0	62	144
+189	1	$ 10.527,00	0	63	144
+190	1	$ 54.450,00	0	61	145
+191	1	$ 96.800,00	0	58	145
+192	1	$ 3.872,00	0	55	145
+193	1	$ 10.527,00	0	53	145
+194	2	$ 6.413,00	0	64	146
+195	3	$ 20.570,00	0	54	146
+196	3	$ 10.527,00	0	63	146
+197	1	$ 7.623,00	0	1	147
+198	3	$ 14.520,00	0	3	147
 \.
 
 
@@ -1261,10 +1282,6 @@ COPY public.detalles_np (id, cantidad_pedida, cantidad_recibida, precio, descuen
 7	7	7	$ 15.000,00	0	t	2	2
 25	4	4	$ 25.000,00	0	t	4	1
 26	7	7	$ 15.000,00	0	t	4	2
-27	3	0	$ 6.300,00	0	t	5	1
-28	1	0	$ 12.000,00	0	t	5	3
-29	2	0	$ 6.300,00	0	t	6	1
-30	1	0	$ 6.300,00	0	t	7	1
 31	5	0	$ 6.300,00	0	t	8	1
 32	11	0	$ 12.000,00	0	t	8	3
 39	2	0	$ 6.300,00	0	t	9	1
@@ -1277,6 +1294,21 @@ COPY public.detalles_np (id, cantidad_pedida, cantidad_recibida, precio, descuen
 68	1	0	$ 6.300,00	0	t	12	1
 69	3	0	$ 7.500,00	0	t	12	2
 70	1	0	$ 12.000,00	0	t	12	3
+29	2	2	$ 6.300,00	0	t	6	1
+30	1	1	$ 6.300,00	0	t	7	1
+28	1	1	$ 12.000,00	0	t	5	3
+27	3	3	$ 6.300,00	0	t	5	1
+71	2	2	$ 6.300,00	0	t	13	1
+72	3	3	$ 7.500,00	0	t	13	2
+73	2	2	$ 12.000,00	0	t	13	3
+74	1	1	$ 6.300,00	0	t	14	1
+75	2	2	$ 12.000,00	0	t	14	3
+86	1	1	$ 7.500,00	0	t	17	2
+76	2	2	$ 6.300,00	0	t	15	1
+77	2	2	$ 6.300,00	0	t	16	1
+78	1	1	$ 12.000,00	0	t	16	3
+84	3	3	$ 6.300,00	0	t	17	1
+85	2	2	$ 12.000,00	0	t	17	3
 \.
 
 
@@ -1338,11 +1370,9 @@ COPY public.estados_pedido (id, nombre, estado) FROM stdin;
 --
 
 COPY public.facturas (id, fecha, fecha_vencimiento, numero_factura, id_usuario, id_estado) FROM stdin;
-119	2023-05-16	2023-05-23	1314919663	103	1
+118	2023-11-15	2023-11-17	1312954334	103	1
 120	2023-05-16	2023-05-23	1312954154	103	1
 121	2023-05-16	2023-05-23	1312955978	103	1
-122	2023-05-16	2023-05-23	1312954356	103	1
-123	2023-05-16	2023-05-23	1312954396	103	1
 124	2023-05-16	2023-05-23	1312954446	103	1
 126	2023-05-16	2023-05-23	0	103	4
 127	2023-05-16	2023-05-23	1312956286	103	1
@@ -1350,16 +1380,25 @@ COPY public.facturas (id, fecha, fecha_vencimiento, numero_factura, id_usuario, 
 129	2023-05-16	2023-05-23	1312954866	103	1
 130	2023-05-16	2023-05-23	1312954874	103	1
 132	2023-05-16	2023-05-23	1314928555	114	1
-133	2023-05-16	2023-05-23	1314928627	114	1
-135	2023-05-17	2023-05-24	1314956359	116	1
-138	2023-05-17	2023-05-24	1314958585	116	1
 139	2023-05-17	2023-05-24	0	116	4
 140	2023-05-17	2023-05-24	1312978054	117	1
 134	2023-05-17	2023-05-24	0	116	3
-118	2023-05-16	2023-05-23	2023416103055912700	103	1
 125	2023-05-16	2023-05-23	0	103	1
 136	2023-04-17	2023-04-24	1314956471	116	1
-137	2023-04-17	2023-04-24	1314956527	116	1
+141	2023-05-29	2023-06-05	1315318499	117	1
+142	2023-05-29	2023-06-05	1315328681	117	1
+143	2023-05-30	2023-06-06	1315359795	117	1
+144	2023-05-30	2023-06-06	1313183130	117	1
+133	2023-10-10	2023-10-13	1314928627	114	1
+135	2023-09-19	2023-09-21	1314956359	116	1
+137	2023-04-04	2023-04-07	1314956527	116	1
+138	2023-04-04	2023-04-07	1314958585	116	1
+145	2023-04-04	2023-04-07	1313183190	117	1
+146	2023-03-25	2023-03-26	1315359949	117	1
+122	2023-11-03	2023-11-07	1312954356	103	1
+123	2023-11-12	2023-11-14	1312954396	103	1
+119	2023-11-03	2023-11-06	1314919663	103	1
+147	2023-05-31	2023-06-07	1315426583	117	1
 \.
 
 
@@ -1383,17 +1422,22 @@ COPY public.ganancias (id, vigencia, porcentaje, id_usuario) FROM stdin;
 --
 
 COPY public.notas_pedido (id, fecha, version, fecha_vencimiento, id_usuario, id_proveedor, id_estado_np, id_tipo_compra) FROM stdin;
-6	2023-05-10	1	2023-05-12	103	1	1	2
-7	2023-05-10	1	2023-05-19	103	1	1	2
 4	2023-05-09	1	2023-07-17	103	1	3	1
 2	2023-05-09	1	2023-07-12	103	1	3	1
 11	2023-05-11	1	2023-06-06	103	1	3	2
 8	2023-05-11	1	2023-05-19	103	1	3	2
 1	2023-05-08	1	2023-05-11	103	1	3	1
-5	2023-03-10	1	2023-05-18	103	1	1	1
 9	2023-04-11	1	2023-05-29	103	1	3	1
 10	2023-04-11	1	2023-05-21	103	1	3	2
 12	2023-03-11	2	2023-08-31	103	1	3	1
+6	2023-05-10	1	2023-05-12	103	1	3	2
+7	2023-05-10	1	2023-05-19	103	1	3	2
+5	2023-03-10	1	2023-05-18	103	1	3	1
+13	2023-05-29	1	2023-05-30	103	1	3	1
+14	2023-05-29	1	2023-05-30	103	1	3	1
+15	2023-05-29	1	2023-05-31	103	1	3	2
+16	2023-05-29	1	2023-05-30	103	1	3	2
+17	2023-05-29	3	2023-05-31	103	1	3	1
 \.
 
 
@@ -1416,20 +1460,54 @@ COPY public.pedidos (id, fecha, descuento, id_usuario, id_estado_pedido) FROM st
 COPY public.productos (id, nombre, descripcion, url_imagen, precio_lista, stock, stock_minimo, estado, id_categoria, id_subcategoria) FROM stdin;
 4	Protein Caramel Latte 400 g	No hay nada como una buena dosis de proteínas y cafeína para ponerse en marcha, sean cuales sean los planes que tengas para el día. Tanto si te estás preparando para entrenar como si simplemente buscas algo saciante y suave después de levantarte temprano o de una comida rápida, la bebida instantánea de café-proteína con auténtico café 100% robusta de Prozis da en el clavo. O más bien dos puntos, ya que proporciona los beneficios de la cafeína y de la proteína de suero. Dos ventajas en un solo trago.	https://static.sscontent.com/thumb/1500/1500/products/124/v1131908_prozis_protein-caramel-latte-400-g_newin.jpg	$ 7.300,00	50	5	t	4	4
 5	Protein Caramel Latte - Extra Caffeine 400 g	No hay nada como una buena dosis de proteínas y cafeína para ponerse en marcha, sean cuales sean los planes que tengas para el día. Tanto si te estás preparando para entrenar como si simplemente buscas algo saciante y suave después de levantarte temprano o de una comida rápida, la bebida instantánea de café-proteína con auténtico café 100% robusta de Prozis da en el clavo. O más bien dos puntos, ya que proporciona los beneficios de la cafeína y de la proteína de suero. Dos ventajas en un solo trago.	https://static.sscontent.com/thumb/1500/1500/products/124/v1132016_prozis_protein-caramel-latte-extra-caffeine-400-g_newin.jpg	$ 8.750,00	25	5	t	4	4
-1	Xtreme Whey Protein 2000 g	La proteína de suero ultrafiltrada de Xtreme Whey es una gran fuente de aminoácidos de cadena ramificada (BCAA) naturales, así como de glutamina y precursores, y contribuye al crecimiento y mantenimiento de la masa muscular. Para facilitar al organismo el proceso de digestión de las proteínas, la fórmula se ha mejorado con el complejo patentado DigeZyme®, una mezcla de enzimas digestivas. Como toque final, Xtreme Whey contiene 12 vitaminas, incluidas las vitaminas C y D, que aportan una ventaja adicional.	https://static.sscontent.com/thumb/1500/1500/products/124/v1211607_prozis_xtreme-whey-protein-2000-g_chocolate_newin_flavor.jpg	$ 6.300,00	17	5	t	4	6
-3	Protein Cappuccino 400 g	No hay nada como una buena dosis de proteínas y cafeína para ponerse en marcha, sean cuales sean los planes que tengas para el día. Tanto si te estás preparando para entrenar como si simplemente buscas algo saciante y suave después de levantarte temprano o de una comida rápida, la bebida instantánea de café-proteína con auténtico café 100% robusta de Prozis da en el clavo. O más bien dos puntos, ya que proporciona los beneficios de la cafeína y de la proteína de suero. Dos ventajas en un solo trago.	https://static.sscontent.com/thumb/1500/1500/products/124/v1131881_prozis_protein-cappuccino-400-g_newin.jpg	$ 12.000,00	36	5	t	4	4
-2	100% Whey Premium Protein 900 g	Las proteínas contribuyen al crecimiento y mantenimiento de la masa muscular, que no sólo es importante por su atractivo estético, sino también, y sobre todo, para favorecer la salud y el bienestar general desde la juventud hasta la vejez.	https://static.sscontent.com/thumb/1500/1500/products/124/v1084525_prozis_100-whey-premium-protein-900-g_newin.jpg	$ 7.500,00	20	5	t	4	4
-28	BCAA Drink 375ml	Tus días ajetreados y activos funcionarán a las mil maravillas. Eso es seguro. Disfrute de esta bebida refrescante y espumosa llena de bondades para estar bien hidratado y potenciado todos los días. Con una gran proporción de BCAA, ¡también contiene cafeína, vitaminas del complejo B, magnesio y zinc para reforzar tus objetivos! ¿Y lo mejor? Saciará tu sed con burbujas frescas, ¡revigorizando tu espíritu! ¡Bébelo en un abrir y cerrar de ojos!	https://static.sscontent.com/thumb/1500/1500/products/124/v1066801_prozis_bcaa-drink-375ml_newin.jpg	$ 2.300,00	3	5	t	4	6
-7	100% Whey Prime 1000 g	Los procesos de producción de suplementos de proteína de suero prácticamente no han cambiado desde la década de 1980. Básicamente, el suero se obtiene de la leche mediante un proceso de filtración, que la industria no ha tocado mucho desde que se empezaron a producir suplementos de suero.	https://static.sscontent.com/thumb/1500/1500/products/124/v1118851_prozis_100-whey-prime-1000-g_natural_newin_flavor.jpg	$ 18.000,00	2	5	t	4	4
+2	100% Whey Premium Protein 900 g	Las proteínas contribuyen al crecimiento y mantenimiento de la masa muscular, que no sólo es importante por su atractivo estético, sino también, y sobre todo, para favorecer la salud y el bienestar general desde la juventud hasta la vejez.	https://static.sscontent.com/thumb/1500/1500/products/124/v1084525_prozis_100-whey-premium-protein-900-g_newin.jpg	$ 7.500,00	22	5	t	4	4
+42	12 x Big Shot 60ml	¿Estás listo para el Big Shot? Con este potenciador pre-entrenamiento, su entrenamiento nunca volverá a ser el mismo. Benefíciate de las ventajas de la Vitamina B6 y la Vitamina B12 para superar incluso los mayores retos.	https://static.sscontent.com/thumb/1500/1500/products/124/v1233593_prozis_12-x-big-shot-60ml_fiery-raspberry_newin_flavor.jpg	$ 23.500,00	21	5	t	4	8
+1	Xtreme Whey Protein 2000 g	La proteína de suero ultrafiltrada de Xtreme Whey es una gran fuente de aminoácidos de cadena ramificada (BCAA) naturales, así como de glutamina y precursores, y contribuye al crecimiento y mantenimiento de la masa muscular. Para facilitar al organismo el proceso de digestión de las proteínas, la fórmula se ha mejorado con el complejo patentado DigeZyme®, una mezcla de enzimas digestivas. Como toque final, Xtreme Whey contiene 12 vitaminas, incluidas las vitaminas C y D, que aportan una ventaja adicional.	https://static.sscontent.com/thumb/1500/1500/products/124/v1211607_prozis_xtreme-whey-protein-2000-g_chocolate_newin_flavor.jpg	$ 6.300,00	32	5	t	4	6
+43	100% Premium Vegan Protein 900 g	La salud, el bienestar general, el cambio climático y el bienestar de los animales hacen que cada vez más personas lleven un estilo de vida basado en las plantas. Nos comprometemos a ayudarte a alcanzar tus objetivos de fitness, tanto si sigues una dieta vegana como si simplemente estás explorando diferentes opciones.	https://static.sscontent.com/thumb/1500/1500/products/124/v1200661_prozis_100-premium-vegan-protein-900-g_newin.jpg	$ 12.000,00	33	5	t	4	12
+3	Protein Cappuccino 400 g	No hay nada como una buena dosis de proteínas y cafeína para ponerse en marcha, sean cuales sean los planes que tengas para el día. Tanto si te estás preparando para entrenar como si simplemente buscas algo saciante y suave después de levantarte temprano o de una comida rápida, la bebida instantánea de café-proteína con auténtico café 100% robusta de Prozis da en el clavo. O más bien dos puntos, ya que proporciona los beneficios de la cafeína y de la proteína de suero. Dos ventajas en un solo trago.	https://static.sscontent.com/thumb/1500/1500/products/124/v1131881_prozis_protein-cappuccino-400-g_newin.jpg	$ 12.000,00	38	5	t	4	4
+28	BCAA Drink 375ml	Tus días ajetreados y activos funcionarán a las mil maravillas. Eso es seguro. Disfrute de esta bebida refrescante y espumosa llena de bondades para estar bien hidratado y potenciado todos los días. Con una gran proporción de BCAA, ¡también contiene cafeína, vitaminas del complejo B, magnesio y zinc para reforzar tus objetivos! ¿Y lo mejor? Saciará tu sed con burbujas frescas, ¡revigorizando tu espíritu! ¡Bébelo en un abrir y cerrar de ojos!	https://static.sscontent.com/thumb/1500/1500/products/124/v1066801_prozis_bcaa-drink-375ml_newin.jpg	$ 2.300,00	33	5	t	4	6
 23	Protein Hazelnut Latte 400 g	No hay nada como una buena dosis de proteínas y cafeína para ponerse en marcha, sean cuales sean los planes que tengas para el día. Tanto si te estás preparando para entrenar como si simplemente buscas algo saciante y suave después de levantarte temprano o de una comida rápida, la bebida instantánea de café-proteína con auténtico café 100% robusta de Prozis da en el clavo. O más bien dos puntos, ya que proporciona los beneficios de la cafeína y de la proteína de suero. Dos ventajas en un solo trago.	https://static.sscontent.com/thumb/1500/1500/products/124/v1131938_prozis_protein-hazelnut-latte-400-g_newin.jpg	$ 7.230,00	12	5	t	4	4
 6	Protein Cappuccino - Extra Caffeine 400 g	No hay nada como una buena dosis de proteínas y cafeína para ponerse en marcha, sean cuales sean los planes que tengas para el día. Tanto si te estás preparando para entrenar como si simplemente buscas algo saciante y suave después de levantarte temprano o de una comida rápida, la bebida instantánea de café-proteína con auténtico café 100% robusta de Prozis da en el clavo. O más bien dos puntos, ya que proporciona los beneficios de la cafeína y de la proteína de suero. Dos ventajas en un solo trago.	https://static.sscontent.com/thumb/1500/1500/products/124/v1131983_prozis_protein-cappuccino-extra-caffeine-400-g_newin.jpg	$ 13.500,00	30	5	t	4	4
 31	Instant Omelet 350 g - Classic	Sí, ¡se puede hacer una tortilla sin romper huevos!\nComer una deliciosa tortilla rica en proteínas es una forma perfecta y equilibrada de empezar el día, y esta deliciosa y esponjosa maravilla sin complicaciones es justo lo que estabas buscando.\nHemos hecho todo el trabajo por usted: hemos escogido los mejores huevos, los hemos convertido en un increíble huevo entero en polvo y les hemos añadido ingredientes seleccionados + ¡sus sabores favoritos!	https://static.sscontent.com/thumb/1500/1500/products/124/v1211788_prozis_instant-omelet-350-g-classic_newin.jpg	$ 870,00	17	5	f	4	8
 25	BCAA 8:1:1 300 g	Xcore ha desarrollado el producto BCAA más potente del mercado. Con una combinación de leucina, isoleucina y valina en una proporción especial de 8:1:1, es el suplemento perfecto para quienes se someten a sesiones de entrenamiento intensas y agotadoras.\nDurante los últimos años, los BCAA se han investigado a fondo. Los BCAA se encuentran en cantidades considerables en el músculo esquelético, constituyendo más del 15% de todas las proteínas musculares, y desempeñan un papel importante a la hora de mantener y desarrollar la masa muscular.	https://static.sscontent.com/thumb/1500/1500/products/124/v1130451_prozis_bcaa-811-300-g_newin.jpg	$ 12.000,00	16	5	t	4	6
+7	100% Whey Prime 1000 g	Los procesos de producción de suplementos de proteína de suero prácticamente no han cambiado desde la década de 1980. Básicamente, el suero se obtiene de la leche mediante un proceso de filtración, que la industria no ha tocado mucho desde que se empezaron a producir suplementos de suero.	https://static.sscontent.com/thumb/1500/1500/products/124/v1118851_prozis_100-whey-prime-1000-g_natural_newin_flavor.jpg	$ 18.000,00	33	5	t	4	4
 27	BCAA GlycoFusion 300 g	El reto está ahí, y te mereces una fórmula de alta calidad que te ayude en tu empeño por completarlo. Por eso Prozis ha desarrollado una maravilla especial con un gran efecto sinérgico, que contiene potentes ingredientes: BCAA, maltodextrina y ácido alfa-lipoico. Ahora tiene definitivamente lo que hace falta para entregarse por completo a los objetivos más elevados.	https://static.sscontent.com/thumb/1500/1500/products/124/v1198403_prozis_bcaa-glycofusion-300-g_newin.jpg	$ 12.000,00	10	5	t	4	6
 24	100% Vegan Protein 900 g	Las personas necesitan cantidades significativas de proteínas a diario para garantizar el crecimiento normal y el mantenimiento de la masa muscular, que no sólo es importante por su atractivo estético, sino también, y sobre todo, para favorecer el bienestar general.\nAdemás, las proteínas desempeñan un papel crucial en el mantenimiento de unos huesos normales, que constituyen la base de un cuerpo fuerte y sano.	https://static.sscontent.com/thumb/1500/1500/products/124/v1137994_prozis_100-vegan-protein-900-g_unflavoured_newin_flavor.jpg	$ 12.000,00	43	5	t	4	12
 26	BCAA 5000 125 tabs	Sabe que las proteínas son uno de los nutrientes más importantes, pero ¿ha pensado alguna vez en qué consisten? Efectivamente, de aminoácidos. Las proteínas del cuerpo humano se componen de un total de 20 aminoácidos, algunos de ellos más eficaces que otros para el desarrollo muscular. Nueve de ellos se consideran "esenciales", lo que significa que el organismo es incapaz de sintetizarlos. Y de estos 9 aminoácidos esenciales, tres se conocen como aminoácidos de cadena ramificada, o BCAA.	https://static.sscontent.com/thumb/1500/1500/products/124/v1098430_prozis_bcaa-5000-125-tabs_newin.jpg	$ 8.300,00	23	5	t	4	6
 30	BCAA Drink 500 mL	Tus días ajetreados y activos funcionarán a las mil maravillas. Eso es seguro. Disfruta de esta refrescante bebida llena de bondades para estar bien hidratado y potenciado cada día. Con una gran proporción de BCAA, también contiene cafeína, vitaminas del complejo B, magnesio y zinc para reforzar tus objetivos. ¿Y lo mejor de todo? Saciará tu sed, ¡revigorizando tu espíritu! Bébelo en un abrir y cerrar de ojos: con su nueva fórmula y sabor mejorado, ¡no podría ser más fácil!	https://static.sscontent.com/thumb/1500/1500/products/124/v1203945_prozis_bcaa-drink-500-ml_newin.jpg	$ 2.400,00	43	3	t	4	6
 29	Strength Training Pack	Las proteínas contribuyen al crecimiento y mantenimiento de la masa muscular, lo que no sólo es importante por su atractivo estético, sino también, y sobre todo, para favorecer la salud y el bienestar general desde la juventud hasta la vejez.\nAdemás, las proteínas desempeñan un papel crucial en el mantenimiento de unos huesos normales, que constituyen la base de un cuerpo fuerte y sano.	https://static.sscontent.com/thumb/1500/1500/products/124/v1105193_prozis_strength-training-pack_newin.jpg	$ 27.300,00	43	5	t	4	6
+33	BCAA GlycoFusion 300 g	El reto está ahí, y te mereces una fórmula de alta calidad que te ayude en tu empeño por completarlo. Por eso hemos desarrollado una maravilla especial con un gran efecto sinérgico, que contiene potentes ingredientes: BCAA, maltodextrina y Ácido Ahora tiene definitivamente lo que hace falta para entregarse por completo a los objetivos más elevados.	https://static.sscontent.com/thumb/1500/1500/products/124/v1198403_prozis_bcaa-glycofusion-300-g_newin.jpg	$ 13.500,00	20	5	t	4	6
+34	BCAA Prime 30 servings	Los procesos utilizados para producir suplementos proteicos prácticamente no han cambiado desde los años ochenta. Esto es cierto para el suero de leche, pero también para los suplementos de aminoácidos. Decididos a establecer un nuevo estándar de calidad para estas fórmulas, empezamos a hacer lo que mejor sabemos hacer: volver al punto de partida, replantearnos todo el proceso de producción e innovar.	https://static.sscontent.com/thumb/1500/1500/products/124/v1115740_prozis_bcaa-prime-30-servings_unflavoured_newin_flavor.jpg	$ 21.000,00	17	5	t	4	6
+35	Recovery RTD 500 mL Wild Berry	Durante y después de tu entrenamiento o a lo largo del día, ¡querrás tomar una bebida refrescante rica en proteínas! Recovery Drink con BCAA, glutamina, zinc y magnesio es una opción más saludable en comparación con otros refrescos, ¡siempre lista para animarte y aportar nuevos sabores a tus ajetreados días!	https://static.sscontent.com/thumb/1500/1500/products/124/v1234763_prozis_recovery-rtd-500-ml-wild-berry_newin.jpg	$ 3.500,00	21	5	t	4	6
+36	Recovery RTD 500 mL Orange	Durante y después de tu entrenamiento o a lo largo del día, ¡querrás tomar una bebida refrescante rica en proteínas! Recovery Drink con BCAA, glutamina, zinc y magnesio es una opción más saludable en comparación con otros refrescos, ¡siempre lista para animarte y aportar nuevos sabores a tus ajetreados días!	https://static.sscontent.com/thumb/1500/1500/products/124/v1234773_prozis_recovery-rtd-500-ml-orange_newin.jpg	$ 1.300,00	21	5	t	4	6
+38	Big Shot - Pre-Workout 46	¿Estás listo para el gran golpe? Con este potenciador pre-entrenamiento tu entrenamiento nunca volverá a ser el mismo. Siente la adrenalina y consigue toda la concentración que necesitas para superar incluso el mayor desafío.	https://static.sscontent.com/thumb/1500/1500/products/124/v1141048_prozis_big-shot-pre-workout-46-servings_newin.jpg	$ 4.700,00	12	5	t	4	8
+39	Energy Charge - Pre Workout 800 g	Tu Energy Charge lo tiene todo para elevar tus esfuerzos deportivos a un nuevo nivel de excelencia. Para los entrenamientos de resistencia y las competiciones que requieren mucho esfuerzo y energía, siempre puedes contar con un suplemento a la altura del reto al que te enfrentas. Con un complejo lleno de potentes ingredientes, que generan más fuerza, resistencia y ayudan a reducir la fatiga, también es una buena fuente de vitaminas y minerales para controlar tu equilibrio electrolítico, la clave de tu hidratación.	https://static.sscontent.com/thumb/1500/1500/products/124/v1076188_prozis_energy-charge-pre-workout-800-g_mojito_newin_flavor.jpg	$ 8.700,00	25	5	t	4	8
+40	Vegan Pre-Workout 90 tabs	¿Quieres sacar el máximo partido a tus entrenamientos? Centra tus esfuerzos en lo que haces fuera del gimnasio. Una dieta equilibrada, con todos los nutrientes necesarios, una buena recuperación y ese empujón extra que sólo Vegan Pre-Workout puede ofrecer.	https://static.sscontent.com/thumb/1500/1500/products/124/v686651_prozis_vegan-pre-workout-90-tabs_newin.jpg	$ 9.500,00	12	5	t	4	8
+37	BCAA 2:1:1 - 400 tabs	Todo el mundo sabe que siempre hay una táctica maravillosa para ofrecer el mejor de los espectáculos. Sólo hace falta un entrenamiento adecuado para ser uno de los privilegiados que alcanzan tan alto nivel. Fácil, ¿verdad? Descubra una fórmula especial con una gran proporción de aminoácidos de cadena ramificada y glutamina que le hará replantearse su forma de jugar y participar en sus entrenamientos hasta el final. 	https://static.sscontent.com/thumb/1500/1500/products/124/v1148044_prozis_bcaa-211-400-tabs_newin.jpg	$ 20.000,00	33	5	t	4	6
+53	Running Shorts - Mustang Black	Están confeccionadas con un tejido suave y ligero que se mueve contigo. Presentan unas propiedades de elasticidad y transpirabilidad excepcionales, mientras que los paneles laterales se han refinado para ofrecer una libertad de movimiento sin restricciones.	https://static.sscontent.com/prodimg/products/124/v936558_prozis_-running-shorts-mustang-black_s_no-code_newin.jpg	$ 8.700,00	11	3	t	5	15
+41	Amino Prime 20 servings	Seguimos subiendo el listón, esforzándonos por marcar realmente la diferencia en la industria de la nutrición deportiva y ayudarle a alcanzar sus objetivos. Tanto si se trata de abastecernos de materias primas como de procesarlas para elaborar productos de consumo, no hacemos concesiones. Siempre esforzándonos por superarnos a nosotros mismos, presentamos con orgullo Amino Prime, un potente y completo suplemento de aminoácidos disponible con y sin cafeína.	https://static.sscontent.com/thumb/1500/1500/products/124/v1115763_prozis_amino-prime-20-servings_newin.jpg	$ 20.000,00	33	5	t	4	8
+44	100% Hemp Protein 900 g	La salud, el bienestar general, el cambio climático y el bienestar de los animales hacen que cada vez más personas lleven un estilo de vida basado en las plantas. Nos comprometemos a ayudarte a alcanzar tus objetivos de fitness, tanto si sigues una dieta vegana como si simplemente estás explorando diferentes opciones.	https://static.sscontent.com/thumb/1500/1500/products/124/v1140866_prozis_100-hemp-protein-900-g_newin.jpg	$ 12.000,00	33	5	t	4	12
+45	Zero Creatine 300 g	La creatina es una sustancia endógena (producida en el organismo) que está presente en todas las células humanas. Es el suplemento más eficaz que existe actualmente en el mercado para mejorar el rendimiento físico.	https://static.sscontent.com/thumb/1500/1500/products/124/v1223599_prozis_zero-creatine-300-g_lime-lemon_newin_flavor.jpg	$ 4.300,00	33	5	t	4	5
+46	Creatine Monohydrate 150 g	La creatina es un compuesto aminoácido natural que se encuentra principalmente en la carne roja y el marisco. La mayor parte de la creatina (~95%) se encuentra en el músculo esquelético y aproximadamente dos tercios de la creatina intramuscular es fosfocreatina, mientras que el resto es creatina libre.	https://static.sscontent.com/thumb/1500/1500/products/124/v1101690_prozis_creatine-monohydrate-150-g_newin.jpg	$ 12.000,00	33	5	t	4	5
+47	Creatine Creapure® 300 g	Simple y llanamente: pregunte a los atletas que practican deportes de fuerza y potencia, y todos le dirán que la creatina puso patas arriba el mundo del deporte. Con el tiempo, la ciencia ha demostrado que la creatina cumple todos los criterios para ser considerada un suplemento seguro y extremadamente valioso, cuando se toma correctamente.	https://static.sscontent.com/thumb/1500/1500/products/124/v1208305_prozis_creatine-creapure-300-g_natural_newin_flavor.jpg	$ 10.000,00	33	5	t	4	5
+48	Advanced Combat RVK T-Shirt - Dark Green Melange	RevoKnit es una avanzada tecnología de punto que crea prendas de alto rendimiento, similares a la piel, con mayor elasticidad, sujeción y comodidad.	https://static.sscontent.com/prodimg/products/124/v1181483_prozis_advanced-combat-rvk-t-shirt-dark-green-melange_s_dark-green-melange_newin.jpg	$ 5.500,00	33	3	t	5	14
+49	Clubhouse Long sleeve T-shirt - Light Gray	Algodón naturalmente suave y ventilado mejorado con propiedades de secado rápido y evacuación acelerada de la humedad.	https://static.sscontent.com/prodimg/products/124/v1174933_prozis_clubhouse-long-sleeve-t-shirt-light-gray_s_light-gray_newin.jpg	$ 6.300,00	33	3	t	5	14
+50	Clubhouse Long sleeve T-shirt - Black	Algodón naturalmente suave y ventilado mejorado con propiedades de secado rápido y evacuación acelerada de la humedad.	https://static.sscontent.com/prodimg/products/124/v1174668_prozis_clubhouse-long-sleeve-t-shirt-black_s_black_newin.jpg	$ 6.100,00	33	3	t	5	14
+51	Staple Men T-Shirt - Black	La Staple es una camiseta sencilla pero de alto rendimiento. Ofrece unas propiedades óptimas de evacuación de la humedad y secado rápido, perfectas para entrenamientos de actividad intensa.	https://static.sscontent.com/prodimg/products/124/v940449_prozis_staple-men-t-shirt-black_s_black_newin.jpg	$ 4.500,00	33	3	t	5	14
+52	Peak NRG Compressive Shorts - Black	Está diseñado para navegar y responder a las duras condiciones presentes en el siempre cambiante paisaje urbano. Todas las prendas se conciben como una expresión de propósito y se confeccionan con materiales de vanguardia mediante técnicas avanzadas y centradas en el detalle.	https://static.sscontent.com/prodimg/products/124/v927084_prozis_peak-nrg-compressive-shorts-black_s_black_newin.jpg	$ 17.000,00	33	3	t	5	15
+54	Supercharger Comptech Leggings - Black	Piezas sin costuras diseñadas para ayudarte a batir tus récords personales. Cada prenda se ha creado para que se adapte perfectamente a tu cuerpo, porque el movimiento y la comodidad nunca deben verse comprometidos.	https://static.sscontent.com/prodimg/products/124/v1179084_prozis_supercharger-comptech-leggings-black_s_black_newin.jpg	$ 17.000,00	33	3	t	5	16
+55	24/7 Superblend Cushioned Crew Socks - Neon Yellow	Con nuestra fibra especial 24/7©, hemos creado unos calcetines transpirables, que absorben la humedad y muy cómodos.	https://static.sscontent.com/prodimg/products/124/v1238759_prozis_247-superblend-cushioned-crew-socks-neon-yellow_3638_neon-yellow_newin.jpg	$ 3.200,00	33	3	t	5	18
+56	24/7 Cushioned Crew Socks - Black	Con nuestra fibra especial 24/7©, hemos creado unos calcetines transpirables, que absorben la humedad y muy cómodos.	https://static.sscontent.com/prodimg/products/124/v1203340_prozis_247-cushioned-crew-socks-black_3638_black_newin.jpg	$ 3.200,00	33	3	t	5	18
+57	24/7 Cushioned Crew Socks - White	Con nuestra fibra especial 24/7©, hemos creado unos calcetines transpirables, que absorben la humedad y muy cómodos.	https://static.sscontent.com/prodimg/products/124/v1198108_prozis_247-cushioned-crew-socks-white_3638_white_newin.jpg	$ 3.200,00	33	3	t	5	18
+58	Supersonic Sneakers - Green / Blue	Presentamos nuestra nueva y exclusiva zapatilla diseñada para ser resistente, muy cómoda y súper llamativa. La Supersonic está fabricada con un resistente ripstop de poliéster de secado rápido y superposiciones de TPU soldadas.	https://static.sscontent.com/prodimg/products/124/v881306_prozis_supersonic-sneakers-green--blue_eu-40_green--blue_newin.jpg	$ 80.000,00	33	1	t	6	23
+59	Destroyer 3.0 Sneakers - Super Black	Presentamos nuestra nueva y exclusiva zapatilla diseñada para ser resistente, muy cómoda y súper llamativa. La Supersonic está fabricada con un resistente ripstop de poliéster de secado rápido y superposiciones de TPU soldadas.	https://static.sscontent.com/prodimg/products/124/v1041647_prozis_destroyer-30-sneakers-super-black_eu-36_black_newin.jpg	$ 75.000,00	33	1	t	6	23
+60	Ubiq HR Smartwatch	Es el momento de que la tecnología te lleve más lejos. Es el momento de reconsiderar el verdadero significado de un reloj y dejar que se convierta en un objeto indispensable con las funciones más inteligentes que jamás hayas imaginado.	https://static.sscontent.com/prodimg/products/124/v997442_prozis_ubiq-hr-smartwatch_single-size_no-code_newin.jpg	$ 47.000,00	33	3	t	11	44
+61	Calibre Watch - Metallic Silver	Los relojes son la encarnación de nuestros valores fundamentales de calidad suprema, rendimiento inigualable y diseño excepcional.\nCada pieza ha sido concebida para ayudarle a superarse a sí mismo cada día, cada minuto y cada segundo.	https://static.sscontent.com/prodimg/products/124/v840772_prozis_calibre-watch-metallic-silver_single-size_no-code_newin.jpg	$ 45.000,00	33	5	t	11	44
+62	Balance Cork Mat - Natural Cork/Black	Diseñado para todo tipo de yoga y pilates, y para todos los ejercicios de peso corporal que se te ocurran. Nada supera la sensación natural del corcho bajo los pies y las manos.	https://static.sscontent.com/prodimg/products/124/v1084593_prozis_balance-cork-mat-natural-corkblack_single-size_natural-cork--black_newin.jpg	$ 6.500,00	33	5	t	9	41
+63	Strong Band - Full-body resistance band	Las bandas de resistencia no ocupan espacio y son perfectas para entrenar en casa, aunque vivas en un apartamento pequeño. ¿Y por qué no llevárselas a un viaje de negocios y tenerlas siempre a mano cuando las necesite? Las bandas de resistencia son uno de los equipos más funcionales y eficaces por múltiples razones. Pueden utilizarse para el entrenamiento de fuerza y para ejercicios de movilidad y rehabilitación.	https://static.sscontent.com/prodimg/products/124/v1022854_prozis_elastic-bands-tf-strong_single-size_no-code_newin.jpg	$ 8.700,00	33	3	t	9	43
+64	X-Speed Smart Jump Rope	Hacer un seguimiento de tus logros deportivos es una forma sólida de entrenar de forma más inteligente y esforzarte más. Por lo tanto, si está buscando un nuevo aparato de fitness que pueda ayudarle a llevar su rendimiento al siguiente nivel, tenemos la solución perfecta para usted: X-Speed Smart Jump Rope.	https://static.sscontent.com/prodimg/products/124/v1170424_prozis_x-speed-smart-jump-rope_single-size_no-code_newin.jpg	$ 5.300,00	33	5	t	7	31
+65	WaterWorks Medium Kettlebell - Gray	Presentamos la dinámica WaterWorks©, donde el ejercicio sigue la corriente.\nConstruye y desarrolla músculo, gana fuerza y fortalece articulaciones y ligamentos.	https://static.sscontent.com/prodimg/products/124/v1012435_prozis_waterworks-medium-kettlebell-gray_single-size_gray_newin.jpg	$ 13.500,00	33	5	t	8	34
+66	H2gO - Water Dumbbells	Estés donde estés, siempre hay una forma cómoda de mantenerte en forma. Emprende un viaje sin peso con una maleta ligera como una pluma, y llena tus mancuernas de agua en tu destino para conseguir el peso que necesitas para tus ejercicios. ¿Y por qué no llevarlas a la piscina y hacer ejercicio en el agua?	https://static.sscontent.com/prodimg/products/124/v1156716_prozis_h2go-water-dumbbells_single-size_no-code_newin.jpg	$ 21.000,00	33	6	t	8	34
 \.
 
 
@@ -1576,11 +1654,27 @@ COPY public.tipos_pago (id, nombre, estado) FROM stdin;
 --
 
 COPY public.usuarios (id, nombre, apellido, email, password, token_confirmacion, cuenta_confirmada, direccion, codigo_postal, telefono, fecha_nacimiento, estado, id_rol, fecha_creacion) FROM stdin;
+122	Juan	Perez	juan@example.com	hashed_password	\N	t	Calle Principal 123	12345	\N	\N	t	2	2023-01-01
+123	María	López	maria@example.com	hashed_password	\N	t	Avenida Central 456	54321	\N	\N	t	2	2023-06-15
+124	Carlos	González	carlos@example.com	hashed_password	\N	t	Calle Secundaria 789	98765	\N	\N	t	2	2023-12-31
+125	John	Doe	johndoe@example.com	hashed_password_1	\N	t	123 Main St	12345	\N	\N	t	2	2023-01-01
+126	Jane	Smith	janesmith@example.com	hashed_password_2	\N	t	456 Oak Ave	54321	\N	\N	t	2	2023-01-02
+127	Michael	Johnson	michaeljohnson@example.com	hashed_password_3	\N	t	789 Elm Rd	98765	\N	\N	t	2	2023-01-03
+128	Emily	Brown	emilybrown@example.com	hashed_password_100	\N	t	321 Pine Ln	67890	\N	\N	t	2	2023-04-11
 90	Fabrizzio	Lo Presti	fabryedm2@gmail.com	$2b$10$nm9Dgy4NCUpsn9LJlzU7Gu5TNJhxj6O7GUx7tKh8evV.BME13vQfK	\N	t	Medellin 948	5000	3513981317	1999-08-03	t	1	2023-05-03
 103	Fabrizzio	Lo Presti	fabryedm@gmail.com	$2b$10$2U3tJ52HVQCbwweSp3eBPuHAbzwdM7qyJwlb1fqTciTG2n3CHKBHe	\N	t	Medellin 948	5000	3513983317	1999-08-03	t	1	2023-05-11
 114	Usuario Prueba	Usuario Prueba	usuario@gmail.com	$2b$10$VtNQ.Cbwm18TRoWXnOPDseXV.9LFPjvdJzJwahABmhVr.fQe5uJmW	\N	t	Medellin	5000	\N	\N	t	2	2023-03-21
 116	Fabrizzio Mauro	Lo Presti	fabrizziolopresti1999@gmail.com	$2b$10$JofjVIizT2fwSAySJaYbVOn3HksC5S2Wbh2UZcovTMyWB5gh6.Ww2	\N	t	Medellin 948	3000	\N	\N	t	2	2023-05-03
-117	Fabrizzio	Lo Presti	112713@tecnicatura.frc.utn.edu.ar	$2b$10$L27wvTU2H4X/XJ.BG9lVd.gx/9aXCUFm8oQKQz75mENKUnG2F/JSi	\N	t	Medellin 948	5000	\N	\N	t	2	2023-06-02
+136	Sofía	López	sofia@example.com	hashed_password_1	\N	t	Calle Mayor 123	28001	\N	\N	t	2	2023-01-01
+137	Martín	Torres	martin@example.com	hashed_password_2	\N	t	Avenida Central 456	28002	\N	\N	t	2	2023-01-02
+138	Valentina	González	valentina@example.com	hashed_password_3	\N	t	Calle Secundaria 789	28003	\N	\N	t	2	2023-01-03
+139	Emilio	Ruiz	emilio@example.com	hashed_password_4	\N	t	Plaza Principal 10	28004	\N	\N	t	2	2023-01-04
+140	Isabella	Santos	isabella@example.com	hashed_password_100	\N	t	Avenida Libertad 20	28005	\N	\N	t	2	2023-04-11
+117	Fabrizzio Mauro	Lo Presti	112713@tecnicatura.frc.utn.edu.ar	$2b$10$L27wvTU2H4X/XJ.BG9lVd.gx/9aXCUFm8oQKQz75mENKUnG2F/JSi	\N	t	Medellin 948	5000	\N	\N	t	2	2023-06-02
+118	Marcelo	Alvear	malvear@gmail.com	$2b$10$64nFfExxNdz5oqiGHJbLIevOLgRlpGN6/V8QjuejGFk6Ey8e1zGjS	\N	t	Colon 1231	5000	\N	\N	t	2	2023-10-03
+119	Jose	Perez	jperez@gmail.com	$2b$10$eUS5HWPaaIeISbAVJPf/gek/a30pmuKrULI7NuwcKU/js/LTOiVEG	\N	t	Rancagua 3200	5000	03513983312	1993-05-12	t	2	2023-05-12
+120	Mauricio	Caceres	mcaceres@gmail.com	$2b$10$QXF8Jw7bg8gzNpvV4pSLWeAJ9zHn7Qy6oa6yv0fuo5tKZV7SANpSC	\N	t	Av. Alem 2132	5000	\N	\N	t	2	2023-09-03
+121	Lorenzo	Magallanes	lmagallanes@gmail.com	$2b$10$1SaVh63SCX2Q5gBkwDUk2.et/Jmel8QTuGWaRdVV5QuIoYjGfZ9mu	\N	t	Managua 7100	5000	0351478853	1970-05-07	t	2	2023-09-21
 \.
 
 
@@ -1608,7 +1702,7 @@ SELECT pg_catalog.setval('public.carrito_id_seq', 47, true);
 -- Name: categorias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.categorias_id_seq', 19, true);
+SELECT pg_catalog.setval('public.categorias_id_seq', 20, true);
 
 
 --
@@ -1626,7 +1720,7 @@ SELECT pg_catalog.setval('public.cupones_descuento_id_seq', 1, false);
 -- Name: detalles_facturas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.detalles_facturas_id_seq', 177, true);
+SELECT pg_catalog.setval('public.detalles_facturas_id_seq', 198, true);
 
 
 --
@@ -1635,7 +1729,7 @@ SELECT pg_catalog.setval('public.detalles_facturas_id_seq', 177, true);
 -- Name: detalles_np_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.detalles_np_id_seq', 70, true);
+SELECT pg_catalog.setval('public.detalles_np_id_seq', 86, true);
 
 
 --
@@ -1680,7 +1774,7 @@ SELECT pg_catalog.setval('public.estados_pedido_id_seq', 3, true);
 -- Name: facturas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.facturas_id_seq', 140, true);
+SELECT pg_catalog.setval('public.facturas_id_seq', 147, true);
 
 
 --
@@ -1698,7 +1792,7 @@ SELECT pg_catalog.setval('public.ganancias_id_seq', 12, true);
 -- Name: notas_pedido_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.notas_pedido_id_seq', 12, true);
+SELECT pg_catalog.setval('public.notas_pedido_id_seq', 17, true);
 
 
 --
@@ -1716,7 +1810,7 @@ SELECT pg_catalog.setval('public.pedidos_id_seq', 1, false);
 -- Name: productos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.productos_id_seq', 31, true);
+SELECT pg_catalog.setval('public.productos_id_seq', 66, true);
 
 
 --
@@ -1752,7 +1846,7 @@ SELECT pg_catalog.setval('public.roles_id_seq', 3, true);
 -- Name: subcategorias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.subcategorias_id_seq', 51, true);
+SELECT pg_catalog.setval('public.subcategorias_id_seq', 52, true);
 
 
 --
@@ -1788,7 +1882,7 @@ SELECT pg_catalog.setval('public.tipos_pago_id_seq', 4, true);
 -- Name: usuarios_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.usuarios_id_seq', 117, true);
+SELECT pg_catalog.setval('public.usuarios_id_seq', 140, true);
 
 
 --
@@ -2229,7 +2323,7 @@ ALTER TABLE ONLY public.usuarios
     ADD CONSTRAINT fk_usuarios_roles FOREIGN KEY (id_rol) REFERENCES public.roles(id) NOT VALID;
 
 
--- Completed on 2023-05-24 14:21:22
+-- Completed on 2023-06-08 08:35:59
 
 --
 -- PostgreSQL database dump complete
