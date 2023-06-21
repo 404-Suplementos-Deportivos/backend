@@ -1,10 +1,8 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from 'src/services/prisma.service'
-import { 
-  productos as ProductoAPI,
-} from '@prisma/client'
-import { FechasDto } from '../dto/FechasDto'
-import { formatDate } from 'src/utils/helpers'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/services/prisma.service';
+import { productos as ProductoAPI } from '@prisma/client';
+import { FechasDto } from '../dto/FechasDto';
+import { formatDate } from 'src/utils/helpers';
 
 @Injectable()
 export class ReportesService {
@@ -17,24 +15,24 @@ export class ReportesService {
         nombre: true,
         stock: true,
         stock_minimo: true,
-      }
-    })
+      },
+    });
     const productosAlerta = productos.filter((producto: ProductoAPI) => {
-      return producto.stock <= producto.stock_minimo
-    })
-    return productosAlerta    
+      return producto.stock <= producto.stock_minimo;
+    });
+    return productosAlerta;
   }
 
   async getLastSells(): Promise<any> {
     const ordenes = await this.prisma.facturas.findMany({
       where: {
         fecha: {
-          gte: new Date(new Date().setDate(new Date().getDate() - 7))
+          gte: new Date(new Date().setDate(new Date().getDate() - 7)),
         },
-        id_estado: 1
+        id_estado: 1,
       },
       orderBy: {
-        fecha: 'desc'
+        fecha: 'desc',
       },
       take: 5,
       select: {
@@ -44,21 +42,21 @@ export class ReportesService {
           select: {
             nombre: true,
             apellido: true,
-          }
+          },
         },
         estados_factura: {
           select: {
-            nombre: true
-          }
+            nombre: true,
+          },
         },
         detalles_facturas: {
           select: {
             cantidad: true,
             precio: true,
-          }
-        }
-      }
-    })
+          },
+        },
+      },
+    });
     return ordenes.map((orden: any) => {
       return {
         numero_factura: Number(orden.numero_factura),
@@ -66,17 +64,17 @@ export class ReportesService {
         usuario: `${orden.usuarios.nombre} ${orden.usuarios.apellido}`,
         estado: orden.estados_factura.nombre,
         total: orden.detalles_facturas.reduce((acc: number, curr: any) => {
-          return acc + (curr.cantidad * curr.precio)
-        }, 0)
-      }
-    })
+          return acc + curr.cantidad * curr.precio;
+        }, 0),
+      };
+    });
   }
 
   async getCantidadRegistrosMensual(fechasDto: FechasDto): Promise<any> {
-    const { fechaDesde, fechaHasta, tipoUsuario } = fechasDto
-    let cantidadUsuariosMensual: any
+    const { fechaDesde, fechaHasta, tipoUsuario } = fechasDto;
+    let cantidadUsuariosMensual: any;
 
-    if(tipoUsuario !== 0) {
+    if (tipoUsuario !== 0) {
       cantidadUsuariosMensual = await this.prisma.$queryRaw`
         SELECT 
           to_char(date_trunc('month', fecha_creacion), 'MM') AS mes,
@@ -101,21 +99,28 @@ export class ReportesService {
       `;
     }
 
-    const result = []
-    for(let i = 0; i < 12; i++) {
-      const mes = i < 9 ? `0${i + 1}` : `${i + 1}`
-      const cantidad = cantidadUsuariosMensual.find((item: any) => item.mes === mes)
+    const result = [];
+    for (let i = 0; i < 12; i++) {
+      const mes = i < 9 ? `0${i + 1}` : `${i + 1}`;
+      const cantidad = cantidadUsuariosMensual.find(
+        (item: any) => item.mes === mes,
+      );
       result.push({
         mes,
-        cantidadUsuarios: cantidad ? cantidad.cantidad_usuarios : 0
-      })
+        cantidadUsuarios: cantidad ? cantidad.cantidad_usuarios : 0,
+      });
     }
-    return result
+    return result;
   }
 
   async getLastSellsBuys(fechasDto: FechasDto): Promise<any> {
-    const { fechaDesde, fechaHasta } = fechasDto
-    const ventasMensuales: any = await this.prisma.$queryRaw`
+    const { fechaDesde, fechaHasta } = fechasDto;
+
+    let ventasMensuales: any;
+    let comprasMensuales: any;
+
+    if (fechaDesde !== fechaHasta) {
+      ventasMensuales = await this.prisma.$queryRaw`
       SELECT
         to_char(date_trunc('month', F.fecha), 'MM') AS mes,
         SUM(DF.precio * DF.cantidad) as resultado
@@ -128,7 +133,7 @@ export class ReportesService {
       ORDER BY mes ASC
     `;
 
-    const comprasMensuales: any = await this.prisma.$queryRaw`
+      comprasMensuales = await this.prisma.$queryRaw`
       SELECT
         to_char(date_trunc('month', NP.fecha), 'MM') AS mes,
         SUM(DNP.precio * DNP.cantidad_pedida) as resultado
@@ -140,31 +145,59 @@ export class ReportesService {
       GROUP BY mes
       ORDER BY mes ASC
     `;
+    } else {
+      ventasMensuales = await this.prisma.$queryRaw`
+      SELECT
+        to_char(date_trunc('month', F.fecha), 'MM') AS mes,
+        SUM(DF.precio * DF.cantidad) as resultado
+      FROM facturas F
+      INNER JOIN detalles_facturas DF ON F.id = DF.id_factura
+      WHERE fecha >= ${new Date(fechaDesde)}
+      AND F.id_estado = 1
+      GROUP BY mes
+      ORDER BY mes ASC
+    `;
+      comprasMensuales = await this.prisma.$queryRaw`
+      SELECT
+        to_char(date_trunc('month', NP.fecha), 'MM') AS mes,
+        SUM(DNP.precio * DNP.cantidad_pedida) as resultado
+      FROM notas_pedido NP
+      INNER JOIN detalles_np DNP ON NP.id = DNP.id_nota_pedido
+      WHERE NP.id_estado_np = 3
+      AND fecha >= ${new Date(fechaDesde)}
+      GROUP BY mes
+      ORDER BY mes ASC
+    `;
+    }
 
-    const resultadoVentas = []
-    const resultadoCompras = []
-    for(let i = 0; i < 12; i++) {
-      const mes = i < 9 ? `0${i + 1}` : `${i + 1}`
-      const cantidadVentas = ventasMensuales.find((item: any) => item.mes === mes)
-      const cantidadCompras = comprasMensuales.find((item: any) => item.mes === mes)
+    const resultadoVentas = [];
+    const resultadoCompras = [];
+    for (let i = 0; i < 12; i++) {
+      const mes = i < 9 ? `0${i + 1}` : `${i + 1}`;
+      const cantidadVentas = ventasMensuales.find(
+        (item: any) => item.mes === mes,
+      );
+      const cantidadCompras = comprasMensuales.find(
+        (item: any) => item.mes === mes,
+      );
       resultadoVentas.push({
         mes,
-        monto: cantidadVentas ? cantidadVentas.resultado : 0
-      })
+        monto: cantidadVentas ? cantidadVentas.resultado : 0,
+      });
       resultadoCompras.push({
         mes,
-        monto: cantidadCompras ? cantidadCompras.resultado : 0
-      })
+        monto: cantidadCompras ? cantidadCompras.resultado : 0,
+      });
     }
 
     return {
       ventas: resultadoVentas,
-      compras: resultadoCompras
-    }
+      compras: resultadoCompras,
+    };
   }
 
   async getCategorySells(fechasDto: FechasDto): Promise<any> {
-    const { fechaDesde, fechaHasta } = fechasDto
+    const { fechaDesde, fechaHasta } = fechasDto;
     const cantidadVentas: any = await this.prisma.$queryRaw`
       SELECT
         CA.nombre AS categoria,
@@ -174,28 +207,30 @@ export class ReportesService {
         SELECT
           id
         FROM facturas
-        WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(fechaHasta)}
+        WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(
+      fechaHasta,
+    )}
         AND id_estado = 1
       ) AS F ON F.id = DF.id_factura
       INNER JOIN productos PR ON PR.id = DF.id_producto
       RIGHT JOIN categorias CA ON CA.id = PR.id_categoria
       GROUP BY CA.nombre;
     `;
-    
+
     const result = cantidadVentas.map((item: any) => {
       return {
         categoria: item.categoria,
-        cantidadVendida: Number(item.cantidad_vendida)
-      }
-    })
-    return result
+        cantidadVendida: Number(item.cantidad_vendida),
+      };
+    });
+    return result;
   }
 
   async getMostSelledProducts(fechasDto: FechasDto): Promise<any> {
-    const { fechaDesde, fechaHasta, tipoCategoria } = fechasDto
-    let productosMasVendidos: any
+    const { fechaDesde, fechaHasta, tipoCategoria } = fechasDto;
+    let productosMasVendidos: any;
 
-    if(tipoCategoria === 0) {
+    if (tipoCategoria === 0) {
       productosMasVendidos = await this.prisma.$queryRaw`
         SELECT
           CA.nombre AS categoria,
@@ -205,7 +240,9 @@ export class ReportesService {
         INNER JOIN (
           SELECT id
           FROM facturas
-          WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(fechaHasta)}
+          WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(
+        fechaHasta,
+      )}
         ) AS F ON F.id = DF.id_factura
         INNER JOIN productos PR ON PR.id = DF.id_producto
         RIGHT JOIN categorias CA ON CA.id = PR.id_categoria
@@ -218,7 +255,9 @@ export class ReportesService {
             INNER JOIN (
               SELECT id
               FROM facturas
-              WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(fechaHasta)}
+              WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(
+        fechaHasta,
+      )}
             ) AS F ON F.id = DF.id_factura
             INNER JOIN productos PR ON PR.id = DF.id_producto
             RIGHT JOIN categorias CA ON CA.id = PR.id_categoria
@@ -239,7 +278,9 @@ export class ReportesService {
         INNER JOIN (
           SELECT id
           FROM facturas
-          WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(fechaHasta)}
+          WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(
+        fechaHasta,
+      )}
         ) AS F ON F.id = DF.id_factura
         INNER JOIN productos PR ON PR.id = DF.id_producto
         RIGHT JOIN categorias CA ON CA.id = PR.id_categoria
@@ -253,7 +294,9 @@ export class ReportesService {
             INNER JOIN (
               SELECT id
               FROM facturas
-              WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(fechaHasta)}
+              WHERE fecha >= ${new Date(fechaDesde)} AND fecha <= ${new Date(
+        fechaHasta,
+      )}
             ) AS F ON F.id = DF.id_factura
             INNER JOIN productos PR ON PR.id = DF.id_producto
             RIGHT JOIN categorias CA ON CA.id = PR.id_categoria
@@ -266,34 +309,34 @@ export class ReportesService {
         LIMIT 7;
       `;
     }
-    
+
     const result = productosMasVendidos.map((item: any) => {
       return {
         categoria: item.categoria,
         productoMasVendido: item.producto_mas_vendido,
-        cantidadVendida: Number(item.cantidad_vendida)
-      }
-    })
-    return result
+        cantidadVendida: Number(item.cantidad_vendida),
+      };
+    });
+    return result;
   }
-  
+
   async getTiposUsuario(): Promise<any> {
     const tiposUsuario: any = await this.prisma.roles.findMany({
       select: {
         id: true,
-        nombre: true
-      }
+        nombre: true,
+      },
     });
-    return tiposUsuario
+    return tiposUsuario;
   }
 
   async getCategorias(): Promise<any> {
     const categorias: any = await this.prisma.categorias.findMany({
       select: {
         id: true,
-        nombre: true
-      }
+        nombre: true,
+      },
     });
-    return categorias
+    return categorias;
   }
 }
